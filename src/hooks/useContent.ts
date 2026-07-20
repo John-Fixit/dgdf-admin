@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { fetchContent, updateContent } from '@/lib/api'
+import { fetchContent, updateContentSection } from '@/lib/api'
 import { QUERY_KEYS } from '@/lib/constants'
-import type { SiteContentDocument } from '@/lib/types'
+import type { UpdateContentSectionPayload } from '@/lib/types'
 
 /**
  * Loads the full public-site content document.
@@ -14,15 +14,17 @@ export function useContent() {
 }
 
 /**
- * Persists the content document and refreshes related queries.
+ * Persists a single content section and refreshes the content query.
  */
-export function useUpdateContent() {
+export function useUpdateContentSection() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: SiteContentDocument) => updateContent(payload),
+    mutationFn: (payload: UpdateContentSectionPayload) =>
+      updateContentSection(payload),
     onSuccess: async (data) => {
       queryClient.setQueryData(QUERY_KEYS.content, data)
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.content })
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard })
     },
   })

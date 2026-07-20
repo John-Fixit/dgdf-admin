@@ -6,6 +6,6 @@ export {
   useMarkMessageRead,
   useDeleteMessage,
 } from './useMessages'
-export { useContent, useUpdateContent } from './useContent'
+export { useContent, useUpdateContentSection } from './useContent'
 export { useDrawer } from './useDrawer'
 export { useConfirm } from './useConfirm'

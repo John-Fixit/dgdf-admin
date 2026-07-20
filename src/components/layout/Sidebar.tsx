@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@heroui/react'
 import {
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { APP_NAME, APP_TAGLINE, NAV_ITEMS } from '@/lib/constants'
+import { loginPathWithFrom } from '@/lib/authRedirect'
 import { cn } from '@/lib/utils'
 import { useAuth, useConfirm, useMessages } from '@/hooks'
 import { useUiStore } from '@/store/uiStore'
@@ -42,6 +43,7 @@ function getUserInitials(name?: string | null): string {
  */
 export function Sidebar(): React.ReactElement {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout } = useAuth()
   const { confirm } = useConfirm()
   const messagesQuery = useMessages()
@@ -63,7 +65,7 @@ export function Sidebar(): React.ReactElement {
   }
 
   /**
-   * Confirms sign-out, clears session, and returns to login.
+   * Confirms sign-out, clears session, and returns to login with return path.
    */
   async function handleSignOut(): Promise<void> {
     const confirmed = await confirm({
@@ -76,8 +78,8 @@ export function Sidebar(): React.ReactElement {
     })
     if (!confirmed) return
 
-    logout()
-    navigate('/login', { replace: true })
+    await logout()
+    navigate(loginPathWithFrom(location.pathname), { replace: true })
   }
 
   return (

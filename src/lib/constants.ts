@@ -3,12 +3,6 @@
 export const APP_NAME = 'DGD'
 export const APP_TAGLINE = 'Foundation Admin'
 
-/** Mock admin credentials for local development */
-export const MOCK_CREDENTIALS = {
-  email: 'admin@dgdelightfound.org',
-  password: 'admin123',
-} as const
-
 /** Local storage key for persisted auth session */
 export const AUTH_STORAGE_KEY = 'dgd-admin-auth'
 

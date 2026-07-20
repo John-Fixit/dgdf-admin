@@ -4,9 +4,11 @@ import {
   Navigate,
   Outlet,
   RouterProvider,
+  useLocation,
 } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout'
-import { LoadingSpinner } from '@/components/shared'
+import { LoadingSpinner, SessionExpiredModal } from '@/components/shared'
+import { loginPathWithFrom } from '@/lib/authRedirect'
 import { useAuthStore } from '@/store/authStore'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
 
@@ -18,13 +20,26 @@ const Donations = lazy(() => import('@/pages/Donations'))
 const Messages = lazy(() => import('@/pages/Messages'))
 
 /**
- * Redirects unauthenticated users to the login page.
+ * Root shell — mounts global modals above all routes.
+ */
+function RootLayout(): React.ReactElement {
+  return (
+    <>
+      <Outlet />
+      <SessionExpiredModal />
+    </>
+  )
+}
+
+/**
+ * Redirects unauthenticated users to login, preserving the current page.
  */
 function ProtectedRoute(): React.ReactElement {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const location = useLocation()
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={loginPathWithFrom(location.pathname)} replace />
   }
 
   return <Outlet />
@@ -37,11 +52,7 @@ function LoginRoute(): React.ReactElement {
   return (
     <Suspense
       fallback={
-        <LoadingSpinner
-          label="Loading…"
-          className="min-h-svh"
-          size="lg"
-        />
+        <LoadingSpinner label="Loading…" className="min-h-svh" size="lg" />
       }
     >
       <Login />
@@ -51,6 +62,7 @@ function LoginRoute(): React.ReactElement {
 
 export const router = createBrowserRouter([
   {
+    element: <RootLayout />,
     errorElement: <RouteErrorPage />,
     children: [
       {

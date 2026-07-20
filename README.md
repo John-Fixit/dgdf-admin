@@ -36,15 +36,10 @@ Open [http://localhost:5173](http://localhost:5173).
 Copy `.env.example` to `.env`:
 
 ```
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5002
 ```
 
-Data currently uses an in-memory mock layer in `src/lib/api.ts` so the portal works without a backend.
-
-## Mock login
-
-- **Email:** `admin@dgdelightfound.org`
-- **Password:** `admin123`
+Auth uses the backend (`POST /auth/login`). Create an admin with `npm run seed:admin` in the backend app.
 
 ## Routes
 

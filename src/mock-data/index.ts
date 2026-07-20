@@ -1,6 +1,5 @@
 import type {
   ActivityItem,
-  AdminUser,
   DashboardAlert,
   DashboardStats,
   Donation,
@@ -11,15 +10,6 @@ import type {
   OutreachProgram,
   SiteContentDocument,
 } from "@/lib/types";
-
-/** Mock authenticated admin user */
-export const mockUser: AdminUser = {
-  id: "admin-1",
-  email: "admin@dgdelightfound.org",
-  name: "Admin User",
-  role: "admin",
-  title: "Lead Coordinator",
-};
 
 /** Seed gallery images */
 export const mockGallery: GalleryItem[] = [
@@ -107,9 +97,9 @@ export const mockDonations: Donation[] = [
     email: "olawale.o@email.com",
     amount: 500_000,
     currency: "NGN",
-    status: "completed",
+    isAnonymous: false,
+    status: "success",
     transactionId: "DGD-9021",
-    message: "Keep up the amazing work!",
     createdAt: "2024-10-24T08:22:00.000Z",
   },
   {
@@ -118,7 +108,8 @@ export const mockDonations: Donation[] = [
     email: "amina.d@email.com",
     amount: 2_500_000,
     currency: "NGN",
-    status: "completed",
+    isAnonymous: false,
+    status: "success",
     transactionId: "DGD-8912",
     createdAt: "2024-10-22T16:10:00.000Z",
   },
@@ -128,6 +119,7 @@ export const mockDonations: Donation[] = [
     email: "chidi.e@email.com",
     amount: 50_000,
     currency: "NGN",
+    isAnonymous: false,
     status: "pending",
     transactionId: "DGD-8765",
     createdAt: "2024-10-21T12:05:00.000Z",
@@ -138,7 +130,8 @@ export const mockDonations: Donation[] = [
     email: "e.balogun@email.com",
     amount: 120_000,
     currency: "NGN",
-    status: "completed",
+    isAnonymous: false,
+    status: "success",
     transactionId: "DGD-8654",
     createdAt: "2024-10-19T09:40:00.000Z",
   },
@@ -148,6 +141,7 @@ export const mockDonations: Donation[] = [
     email: "s.yusuf@email.com",
     amount: 1_000_000,
     currency: "NGN",
+    isAnonymous: false,
     status: "failed",
     transactionId: "DGD-8543",
     createdAt: "2024-10-18T19:55:00.000Z",
@@ -158,7 +152,8 @@ export const mockDonations: Donation[] = [
     email: "fatima.h@email.com",
     amount: 75_000,
     currency: "NGN",
-    status: "completed",
+    isAnonymous: false,
+    status: "success",
     transactionId: "DGD-8432",
     createdAt: "2024-10-16T07:30:00.000Z",
   },
@@ -168,9 +163,9 @@ export const mockDonations: Donation[] = [
     email: "d.okeke@email.com",
     amount: 300_000,
     currency: "NGN",
-    status: "completed",
+    isAnonymous: false,
+    status: "success",
     transactionId: "DGD-8321",
-    message: "Happy to support the youth programs.",
     createdAt: "2024-10-14T14:18:00.000Z",
   },
   {
@@ -179,6 +174,7 @@ export const mockDonations: Donation[] = [
     email: "n.adeyemi@email.com",
     amount: 200_000,
     currency: "NGN",
+    isAnonymous: false,
     status: "pending",
     transactionId: "DGD-8210",
     createdAt: "2024-10-12T11:00:00.000Z",
@@ -189,7 +185,8 @@ export const mockDonations: Donation[] = [
     email: "i.musa@email.com",
     amount: 450_000,
     currency: "NGN",
-    status: "completed",
+    isAnonymous: false,
+    status: "success",
     transactionId: "DGD-8109",
     createdAt: "2024-10-10T15:20:00.000Z",
   },
@@ -199,17 +196,12 @@ export const mockDonations: Donation[] = [
     email: "g.nwosu@email.com",
     amount: 85_000,
     currency: "NGN",
-    status: "completed",
+    isAnonymous: false,
+    status: "success",
     transactionId: "DGD-8098",
     createdAt: "2024-10-08T10:45:00.000Z",
   },
 ];
-
-/** Donation overview stats shown on Donation Records (API wiring later) */
-export const mockDonationStats = {
-  totalFundsLabel: "₦42.8M",
-  activeDonors: 1_204,
-} as const;
 
 /** Seed contact messages */
 export const mockMessages: Message[] = [
@@ -273,118 +265,94 @@ export const mockMessages: Message[] = [
   },
 ];
 
-/** Editable site content seed — mirrors public-web editorial structure */
+/** Editable site content seed — Content Manager sections */
 export const mockContent: SiteContentDocument = {
   home: {
-    heroHeadline: "Restoring Hope and Dignity to the Heart of Nigeria.",
-    missionText:
-      "We are an elite humanitarian collective dedicated to empowering underserved communities through sustainable health, education, and spiritual guidance. Every soul deserves a chance at delight.",
-    establishedYear: "2024",
-    mandateHeadline: "Driven by Faith, Guided by Compassion",
-    mandateQuote:
-      "Our mission transcends mere charity; it is a divine commitment to uplift the vulnerable and showcase the true spirit of African resilience through tangible impact.",
-    vision: "Building a Nigeria where delight is a common heritage.",
-    mandate:
-      "To preach the gospel, serve the vulnerable, and empower communities with compassion, dignity, and hope.",
-    aboutText:
-      "Divine Gospel Delight Foundation is a premium humanitarian foundation registered in Nigeria, committed to high-impact interventions across Africa.",
-    visionHeadline: "Building a Nigeria where delight is a common heritage.",
-    impactCallout: "Impact over Optics.",
-    impactCalloutBody:
-      "We believe in measurable, sustainable change that outlives our physical presence.",
-    livesImpacted: "12,000+",
-    outreaches: "45",
-    volunteers: "150",
-    successRate: "92%",
-    donateCtaHeadline: "Your Generosity Fuels Transformation",
-    donateCtaBody:
-      "Join partners across Nigeria in restoring hope through education, health, and community outreach.",
-    donateCtaPrimary: "Donate Now",
+    hero: {
+      headline: 'Restoring Hope and Dignity to the Heart of Nigeria.',
+      paragraph:
+        'We are a humanitarian foundation dedicated to empowering underserved communities through sustainable health, education, and spiritual guidance. Every soul deserves a chance at delight.',
+    },
+    mission: {
+      title: 'Our Mission',
+      body: 'To preach the gospel, serve the vulnerable, and empower communities with compassion, dignity, and hope across Nigeria.',
+    },
+    visionMandateImpact: {
+      vision: 'Building a Nigeria where delight is a common heritage.',
+      mandate:
+        'To preach the gospel, serve the vulnerable, and empower communities with compassion, dignity, and hope.',
+      impactSummary:
+        'We believe in measurable, sustainable change that outlives our physical presence — impact over optics.',
+    },
+    impactStats: {
+      livesImpacted: 12000,
+      outreaches: 45,
+      volunteers: 150,
+      successRate: 92,
+    },
+    donateCta: {
+      headline: 'Your Generosity Fuels Transformation',
+      subtext:
+        'Join partners across Nigeria in restoring hope through education, health, and community outreach.',
+    },
   },
   about: {
-    label: "Our Heritage",
-    headline: "Crafting a Legacy of",
-    headlineAccent: "Hope & Excellence",
-    headlineSuffix: "in Nigeria.",
-    intro:
-      "Divine Gospel Delight Foundation stands as a beacon of luxury philanthropy, dedicated to restoring dignity and creating sustainable impact through refined humanitarian efforts.",
-    missionTitle: "Our Mission",
-    missionBody:
-      "To empower marginalized communities across Nigeria by providing access to elite-level healthcare, premium educational resources, and sustainable economic opportunities.",
-    visionTitle: "The Vision",
-    visionBody:
-      "We envision a Nigeria where humanitarian aid is synonymous with excellence, where every individual has the platform to transition from surviving to thriving.",
-    quote:
-      "Our faith inspires every act of compassion and every life we transform.",
-    journeyLabel: "Our Journey",
-    journeyHeadline: "A Decade of Dedication",
-    leadershipLabel: "The Board",
-    leadershipHeadline: "Our Leadership",
-    ctaHeadline: "Be Part of the Legacy",
-    ctaBody:
-      "Join us in our mission to redefine Nigerian humanitarian efforts through the lens of excellence and dignity.",
-    ctaPrimary: "Support Our Work",
-    ctaSecondary: "Get in Touch",
-  },
-  founder: {
-    label: "The Founder",
-    name: "Dr. Adebayo Ogunlesi",
-    role: "Founder & CEO",
-    intro:
-      "A visionary philanthropist whose faith, discipline, and devotion to community excellence shaped the foundation’s mission to restore hope and dignity across Nigeria.",
-    articleLabel: "Leadership Journey",
-    articleHeadline: "A Calling Beyond Charity",
-    articleBody:
-      "From early community relief work in Lagos to building a structured national foundation, Dr. Ogunlesi’s leadership blends spiritual conviction with operational excellence. His vision continues to guide every outreach, scholarship, and health initiative we deliver.",
-    quote:
-      "Excellence in compassion is not optional — it is how we honor the people we serve.",
-    quoteAttribution: "Dr. Adebayo Ogunlesi",
-    ctaHeadline: "Walk With the Mission",
-    ctaBody:
-      "Partner with the foundation to extend dignity, education, and hope across Nigeria.",
-    ctaPrimary: "Support the Work",
-    ctaSecondary: "Contact Us",
+    hero: {
+      headline: 'Crafting a Legacy of Hope & Excellence in Nigeria.',
+      subtext:
+        'Divine Gospel Delight Foundation stands as a beacon of refined philanthropy, dedicated to restoring dignity and creating sustainable impact.',
+    },
+    story: {
+      title: 'Our Foundation Story',
+      body: 'Divine Gospel Delight Foundation was founded on the conviction that every act of compassion should be delivered with excellence.\n\nFrom early community relief work to structured national programmes, we have grown into a foundation committed to health, education, and spiritual uplift across Nigeria.',
+    },
+    mandateQuote: {
+      quote:
+        'Our faith inspires every act of compassion and every life we transform.',
+    },
+    leadership: {
+      heading: 'Our Leadership',
+      subtext:
+        'A dedicated board guiding the foundation with faith, discipline, and operational excellence.',
+    },
   },
   donate: {
-    heroLabel: "Empowerment through Giving",
-    heroHeadline: "Your Generosity,",
-    heroAccent: "Their Future.",
-    heroBody:
-      "At Divine Gospel Delight Foundation, every donation is a seed planted for sustainable change. Join our mission to provide dignity, education, and health to communities across Nigeria.",
-    impactTitle: "Where your money goes",
-    impactQuote:
-      "The smallest act of kindness is worth more than the grandest intention.",
-    transparencyLabel: "Transparency First",
-    transparencyHeadline: "Trust is our foundation.",
-    transparencyBody:
-      "We pride ourselves on 100% financial transparency. 92% of all donations go directly to our field programs, ensuring your contribution makes the maximum possible impact.",
+    hero: {
+      headline: 'Your Generosity, Their Future.',
+      subtext:
+        'Every donation is a seed planted for sustainable change. Join our mission to provide dignity, education, and health to communities across Nigeria.',
+    },
+    impactStats: {
+      peopleReached: 12402,
+      outreaches: 45,
+    },
+    testimonial: {
+      quote:
+        'Supporting this foundation has been one of the most meaningful decisions I have made. You can see the dignity restored in every community they touch.',
+      donorName: 'Chioma Adebayo',
+      donorRole: 'Monthly Partner',
+    },
   },
   contact: {
-    label: "Get in Touch",
-    headline: "Connecting hearts to the mission of compassion.",
-    body: "Whether you have a question about our programs, wish to partner with us, or simply want to share a word of encouragement, we are here to listen and respond with grace.",
-    quote:
-      "Every conversation is an opportunity to extend hope.",
-    addressLines:
-      "12 Prosperity Lane, Victoria Island Extension,\nLagos, Nigeria",
-    emailLines: "info@dgdelightfound.org\npartnerships@dgdelightfound.org",
-    phoneLines: "+234 (0) 800 DIVINE GOSPEL\n+234 1 234 5678",
-    officeHours:
-      "Monday – Friday: 9:00 AM – 5:00 PM\nSaturday: 10:00 AM – 2:00 PM",
-    inquiryOptions:
-      "General Inquiry\nDonation Support\nPartnership Proposal\nVolunteer Opportunities",
+    hero: {
+      headline: 'Connecting hearts to the mission of compassion.',
+      subtext:
+        'Whether you have a question about our programmes, wish to partner with us, or simply want to share a word of encouragement — we are here to listen.',
+    },
+    info: {
+      phone: '+234 1 234 5678',
+      email: 'info@dgdelightfound.org',
+      address:
+        '12 Prosperity Lane, Victoria Island Extension,\nLagos, Nigeria',
+      officeHours: 'Monday – Friday: 9:00 AM – 5:00 PM',
+    },
+    social: {
+      facebook: 'https://facebook.com/dgdelightfound',
+      instagram: 'https://instagram.com/dgdelightfound',
+      youtube: 'https://youtube.com/@dgdelightfound',
+    },
   },
-  gallery: {
-    heroLabel: "Visual Stories",
-    heroHeadline: "Moments of Impact Across Nigeria",
-    heroBody:
-      "A curated visual record of outreach, education, and community transformation led by Divine Gospel Delight Foundation.",
-    ctaHeadline: "Be Part of the Next Chapter",
-    ctaBody:
-      "Your support helps us capture more stories of dignity restored and hope renewed.",
-    ctaPrimary: "Support Our Work",
-  },
-  lastUpdatedAt: "2026-07-18T10:00:00.000Z",
+  lastUpdatedAt: '2026-07-18T10:00:00.000Z',
 };
 
 /**
@@ -396,7 +364,7 @@ export function computeDashboardStats(
   messages: Message[],
   content: SiteContentDocument,
 ): DashboardStats {
-  const completed = donations.filter((d) => d.status === "completed");
+  const completed = donations.filter((d) => d.status === "success");
   const sectionCount = Object.keys(content).filter(
     (key) => key !== "lastUpdatedAt",
   ).length;

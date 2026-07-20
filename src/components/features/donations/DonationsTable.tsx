@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Download, Filter, MoreVertical, Search } from 'lucide-react'
+import { Download, Filter, Search } from 'lucide-react'
 import { Button, Pagination } from '@heroui/react'
 import * as XLSX from 'xlsx'
 import { Badge, Input } from '@/components/ui'
@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/shared'
 import { useDonations } from '@/hooks'
 import { cn, formatCurrency, formatDate } from '@/lib/utils'
 import type { Donation } from '@/lib/types'
+import { DonationReceiptModal } from './DonationReceiptModal'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const PAGE_SIZE = 5
@@ -26,7 +27,7 @@ const AVATAR_TONES = [
 function statusVariant(
   status: Donation['status'],
 ): 'success' | 'warning' | 'error' {
-  if (status === 'completed') return 'success'
+  if (status === 'success') return 'success'
   if (status === 'pending') return 'warning'
   return 'error'
 }
@@ -78,6 +79,7 @@ function exportExcel(rows: Donation[]): void {
 
 /**
  * Donation records table with search, status filter, pagination, and Excel export.
+ * Rows open a receipt-style details modal.
  */
 export function DonationsTable(): React.ReactElement {
   const { data, isLoading, isError, error, refetch } = useDonations()
@@ -85,6 +87,7 @@ export function DonationsTable(): React.ReactElement {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [filterOpen, setFilterOpen] = useState(false)
   const [page, setPage] = useState(1)
+  const [selected, setSelected] = useState<Donation | null>(null)
 
   const filtered = useMemo(() => {
     const items = data ?? []
@@ -133,7 +136,6 @@ export function DonationsTable(): React.ReactElement {
 
   return (
     <div className="space-y-6">
-      {/* Search & filter bar */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -184,7 +186,7 @@ export function DonationsTable(): React.ReactElement {
                 {(
                   [
                     ['all', 'All statuses'],
-                    ['completed', 'Completed'],
+                    ['success', 'Success'],
                     ['pending', 'Pending'],
                     ['failed', 'Failed'],
                   ] as const
@@ -226,7 +228,6 @@ export function DonationsTable(): React.ReactElement {
         </div>
       </motion.section>
 
-      {/* Records table */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
@@ -234,7 +235,7 @@ export function DonationsTable(): React.ReactElement {
         className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card"
       >
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[640px] border-collapse text-left text-sm">
             <thead>
               <tr className="bg-primary text-primary-foreground">
                 <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider sm:px-8">
@@ -249,16 +250,13 @@ export function DonationsTable(): React.ReactElement {
                 <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-wider sm:px-8">
                   Status
                 </th>
-                <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-wider sm:px-8">
-                  Action
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {pageItems.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={4}
                     className="px-6 py-12 text-center text-slate-400 sm:px-8"
                   >
                     No donation records match your search.
@@ -275,8 +273,18 @@ export function DonationsTable(): React.ReactElement {
                       delay: index * 0.04,
                       ease: EASE,
                     }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View receipt for ${donation.donorName}`}
+                    onClick={() => setSelected(donation)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        setSelected(donation)
+                      }
+                    }}
                     className={cn(
-                      'transition-colors hover:bg-slate-50/80',
+                      'cursor-pointer transition-colors hover:bg-accent/5 focus-visible:bg-accent/5 focus-visible:outline-none',
                       index % 2 === 1 && 'bg-slate-50/50',
                     )}
                   >
@@ -315,16 +323,6 @@ export function DonationsTable(): React.ReactElement {
                         {donation.status}
                       </Badge>
                     </td>
-                    <td className="px-6 py-5 text-right sm:px-8">
-                      <Button
-                        isIconOnly
-                        variant="light"
-                        className="text-slate-400 data-[hover=true]:text-primary"
-                        aria-label={`Actions for ${donation.donorName}`}
-                      >
-                        <MoreVertical className="h-5 w-5" />
-                      </Button>
-                    </td>
                   </motion.tr>
                 ))
               )}
@@ -332,7 +330,6 @@ export function DonationsTable(): React.ReactElement {
           </table>
         </div>
 
-        {/* Pagination */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -357,6 +354,12 @@ export function DonationsTable(): React.ReactElement {
           />
         </motion.div>
       </motion.div>
+
+      <DonationReceiptModal
+        donation={selected}
+        isOpen={selected !== null}
+        onClose={() => setSelected(null)}
+      />
     </div>
   )
 }

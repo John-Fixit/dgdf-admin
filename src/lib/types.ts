@@ -4,6 +4,8 @@ export interface AdminUser {
   email: string
   name: string
   role: 'admin'
+  /** JWT used as Bearer token for API calls */
+  token?: string
   /** Display title shown in the sidebar profile */
   title?: string
 }
@@ -85,10 +87,10 @@ export interface Donation {
   email: string
   amount: number
   currency: string
-  status: 'completed' | 'pending' | 'failed'
-  /** Public-facing transaction reference (e.g. DGD-9021) */
+  status: 'success' | 'pending' | 'failed'
+  /** Paystack transaction reference */
   transactionId: string
-  message?: string
+  isAnonymous: boolean
   createdAt: string
 }
 
@@ -105,7 +107,7 @@ export interface Message {
   phone?: string
 }
 
-/** Editable site content fields */
+/** Editable site content fields (legacy flat shape) */
 export interface SiteContent {
   vision: string
   mandate: string
@@ -114,119 +116,121 @@ export interface SiteContent {
   missionText: string
 }
 
-/** Home page editorial sections for the public site */
+/** Content Manager page tabs */
+export type ContentPageKey = 'home' | 'about' | 'donate' | 'contact'
+
+/** Home page editable sections */
 export interface HomeContentSection {
-  heroHeadline: string
-  missionText: string
-  establishedYear: string
-  mandateHeadline: string
-  mandateQuote: string
-  vision: string
-  mandate: string
-  aboutText: string
-  visionHeadline: string
-  impactCallout: string
-  impactCalloutBody: string
-  livesImpacted: string
-  outreaches: string
-  volunteers: string
-  successRate: string
-  donateCtaHeadline: string
-  donateCtaBody: string
-  donateCtaPrimary: string
+  hero: {
+    headline: string
+    paragraph: string
+  }
+  mission: {
+    title: string
+    body: string
+  }
+  visionMandateImpact: {
+    vision: string
+    mandate: string
+    impactSummary: string
+  }
+  impactStats: {
+    livesImpacted: number
+    outreaches: number
+    volunteers: number
+    successRate: number
+  }
+  donateCta: {
+    headline: string
+    subtext: string
+  }
 }
 
-/** About page editorial sections */
+/** About page editable sections */
 export interface AboutContentSection {
-  label: string
-  headline: string
-  headlineAccent: string
-  headlineSuffix: string
-  intro: string
-  missionTitle: string
-  missionBody: string
-  visionTitle: string
-  visionBody: string
-  quote: string
-  journeyLabel: string
-  journeyHeadline: string
-  leadershipLabel: string
-  leadershipHeadline: string
-  ctaHeadline: string
-  ctaBody: string
-  ctaPrimary: string
-  ctaSecondary: string
+  hero: {
+    headline: string
+    subtext: string
+  }
+  story: {
+    title: string
+    body: string
+  }
+  mandateQuote: {
+    quote: string
+  }
+  leadership: {
+    heading: string
+    subtext: string
+  }
 }
 
-/** Founder page editorial sections */
-export interface FounderContentSection {
-  label: string
-  name: string
-  role: string
-  intro: string
-  articleLabel: string
-  articleHeadline: string
-  articleBody: string
-  quote: string
-  quoteAttribution: string
-  ctaHeadline: string
-  ctaBody: string
-  ctaPrimary: string
-  ctaSecondary: string
-}
-
-/** Donate page editorial sections */
+/** Donate page editable sections */
 export interface DonateContentSection {
-  heroLabel: string
-  heroHeadline: string
-  heroAccent: string
-  heroBody: string
-  impactTitle: string
-  impactQuote: string
-  transparencyLabel: string
-  transparencyHeadline: string
-  transparencyBody: string
+  hero: {
+    headline: string
+    subtext: string
+  }
+  impactStats: {
+    peopleReached: number
+    outreaches: number
+  }
+  testimonial: {
+    quote: string
+    donorName: string
+    donorRole: string
+  }
 }
 
-/** Contact page editorial sections */
+/** Contact page editable sections */
 export interface ContactContentSection {
-  label: string
-  headline: string
-  body: string
-  quote: string
-  addressLines: string
-  emailLines: string
-  phoneLines: string
-  officeHours: string
-  inquiryOptions: string
-}
-
-/** Gallery page copy (assets stay in Gallery Manager) */
-export interface GalleryCopySection {
-  heroLabel: string
-  heroHeadline: string
-  heroBody: string
-  ctaHeadline: string
-  ctaBody: string
-  ctaPrimary: string
+  hero: {
+    headline: string
+    subtext: string
+  }
+  info: {
+    phone: string
+    email: string
+    address: string
+    officeHours: string
+  }
+  social: {
+    facebook: string
+    instagram: string
+    youtube: string
+  }
 }
 
 /**
- * Full public-site content document managed by the Content Control Center.
- * Wired to mock API until backend content routes expand beyond flat keys.
+ * Full public-site content document managed by Content Manager.
+ * Mock-backed until backend content routes are connected.
  */
 export interface SiteContentDocument {
   home: HomeContentSection
   about: AboutContentSection
-  founder: FounderContentSection
   donate: DonateContentSection
   contact: ContactContentSection
-  gallery: GalleryCopySection
   lastUpdatedAt: string
 }
 
-/** Content page keys shown in the control center nav */
-export type ContentPageKey = keyof Omit<SiteContentDocument, 'lastUpdatedAt'>
+/** Section keys within each page */
+export type HomeSectionKey = keyof HomeContentSection
+export type AboutSectionKey = keyof AboutContentSection
+export type DonateSectionKey = keyof DonateContentSection
+export type ContactSectionKey = keyof ContactContentSection
+
+export type ContentSectionKey =
+  | HomeSectionKey
+  | AboutSectionKey
+  | DonateSectionKey
+  | ContactSectionKey
+
+/** Payload for saving a single content section */
+export interface UpdateContentSectionPayload {
+  page: ContentPageKey
+  section: ContentSectionKey
+  data: Record<string, string | number>
+}
 
 /** Dashboard summary metrics */
 export interface DashboardStats {

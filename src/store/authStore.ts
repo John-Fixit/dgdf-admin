@@ -1,18 +1,20 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { AUTH_STORAGE_KEY, MOCK_CREDENTIALS } from '@/lib/constants'
+import { AUTH_STORAGE_KEY } from '@/lib/constants'
 import type { AdminUser, LoginCredentials } from '@/lib/types'
-import { login as apiLogin } from '@/lib/api'
+import { login as apiLogin, logout as apiLogout } from '@/lib/api'
 
 interface AuthState {
   user: AdminUser | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
-  /** Authenticates with mock credentials and persists the session */
+  /** Authenticates against the API and persists the session */
   login: (credentials: LoginCredentials) => Promise<boolean>
-  /** Clears the authenticated session */
-  logout: () => void
+  /** Ends the API session and clears local auth state */
+  logout: () => Promise<void>
+  /** Clears local auth without calling the API (e.g. expired session) */
+  clearSession: () => void
   /** Clears any auth error message */
   clearError: () => void
 }
@@ -52,7 +54,17 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        await apiLogout()
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        })
+      },
+
+      clearSession: () => {
         set({
           user: null,
           isAuthenticated: false,
@@ -74,6 +86,3 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 )
-
-/** Re-export mock credentials for the login form hint */
-export { MOCK_CREDENTIALS }

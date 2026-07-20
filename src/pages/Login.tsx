@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '@heroui/react'
 import {
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { Input, Label } from '@/components/ui'
 import { useAuth } from '@/hooks'
+import { fromParamToPath } from '@/lib/authRedirect'
 import { cn } from '@/lib/utils'
 
 const HERO_IMAGE =
@@ -33,12 +34,14 @@ type LoginFormValues = {
 
 /**
  * Public login page — split-pane layout matching the approved admin design.
- * Form state via react-hook-form; auth via useAuth (backend wiring later).
+ * Form state via react-hook-form; auth via backend /api/auth/login.
  */
 export default function Login(): React.ReactElement {
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
+  const redirectTo = fromParamToPath(searchParams.get('from'))
 
   const {
     register,
@@ -53,13 +56,13 @@ export default function Login(): React.ReactElement {
   })
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={redirectTo} replace />
   }
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
     clearError()
     const ok = await login({ email: email.trim(), password })
-    if (ok) navigate('/dashboard', { replace: true })
+    if (ok) navigate(redirectTo, { replace: true })
   })
 
   return (
