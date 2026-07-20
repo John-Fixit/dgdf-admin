@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+@plugin '../hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-sidebar: #0f2744;
+  --color-surface: #f4f6f9;
+  --color-primary: #1a3a5c;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #f0a500;
+  --color-accent-foreground: #0f2744;
+  --color-success: #16a34a;
+  --color-success-foreground: #ffffff;
+  --color-error: #dc2626;
+  --color-error-foreground: #ffffff;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --shadow-card:
+    0 1px 3px 0 rgb(15 39 68 / 0.06), 0 1px 2px -1px rgb(15 39 68 / 0.06);
+  --shadow-login: 0 4px 24px rgb(26 58 92 / 0.06);
+  --shadow-luxury: 0 10px 30px -15px rgba(26, 58, 92, 0.08);
+  --shadow-ambient: 0 20px 40px -10px rgba(26, 58, 92, 0.04);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-surface font-sans text-slate-800 antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-tight;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.5) transparent;
+  }
+
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.15) transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: rgb(15 39 68 / 0.1);
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.12);
+    border-radius: 2px;
+  }
+}
