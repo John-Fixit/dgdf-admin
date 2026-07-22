@@ -6,7 +6,7 @@ import { LoadingSpinner, PageHeader } from '@/components/shared'
 import {
   AuditFilterBar,
   type AuditFiltersState,
-  AuditLogList,
+  AuditTimeline,
 } from '@/components/features/audit'
 import { useAuditLogs, useAuth, useConfirm } from '@/hooks'
 import { useDeleteAuditLogs } from '@/hooks/useAuditLogActions'
@@ -139,7 +139,7 @@ export default function AuditLog(): React.ReactElement {
         transition={{ duration: 0.35, ease: EASE }}
         className={isFetching ? 'opacity-70 transition-opacity' : undefined}
       >
-        <AuditLogList items={items} />
+        <AuditTimeline items={items} />
       </motion.div>
 
       <div className="mt-5 flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-card sm:flex-row sm:px-8">

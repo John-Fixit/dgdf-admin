@@ -1,4 +1,4 @@
-import { Image, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Image, LogIn, LogOut, Pencil, Plus, Trash2 } from 'lucide-react'
 import type { AuditLogEntry } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -20,7 +20,7 @@ export function AuditEventIcon({
   return (
     <span
       className={cn(
-        'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-4 ring-white',
+        'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ring-4 ring-white',
         tone,
         className,
       )}
@@ -32,29 +32,29 @@ export function AuditEventIcon({
 }
 
 /**
- * @param entry
+ * Solid fill tone matching the timeline visual language.
  */
 function getTone(entry: AuditLogEntry): string {
-  if (entry.action === 'delete') {
-    return 'bg-rose-100 text-rose-600'
-  }
-  if (entry.action === 'create') {
-    return 'bg-violet-100 text-violet-600'
-  }
-  if (entry.entity === 'gallery') {
-    return 'bg-orange-100 text-orange-500'
-  }
-  return 'bg-accent/20 text-accent'
+  if (entry.action === 'delete') return 'bg-rose-500'
+  if (entry.entity === 'auth') return 'bg-primary'
+  if (entry.action === 'create') return 'bg-violet-500'
+  if (entry.entity === 'gallery') return 'bg-orange-400'
+  return 'bg-accent'
 }
 
 /**
- * @param entry
+ * Icon chosen by action / entity.
  */
 function getIcon(entry: AuditLogEntry) {
+  if (entry.entity === 'auth') {
+    return entry.changes.includes('logout') || entry.action === 'delete'
+      ? LogOut
+      : LogIn
+  }
   if (entry.action === 'delete') return Trash2
-  if (entry.action === 'create') return Plus
   if (entry.entity === 'gallery' || entry.changes.includes('photo')) {
     return Image
   }
+  if (entry.action === 'create') return Plus
   return Pencil
 }

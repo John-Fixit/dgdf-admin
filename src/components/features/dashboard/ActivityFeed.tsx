@@ -31,12 +31,12 @@ const typeLabel: Record<ActivityItem["type"], string> = {
 
 const typeBadge: Record<
   ActivityItem["type"],
-  "success" | "warning" | "default" | "secondary"
+  "success" | "warning" | "default" | "secondary" | "primary" | "purple"
 > = {
   donation: "success",
   story: "warning",
-  update: "default",
-  system: "secondary",
+  update: "primary",
+  system: "purple",
 };
 
 const typeAvatar: Record<
@@ -60,7 +60,7 @@ const typeAvatar: Record<
   },
   system: {
     icon: ShieldCheck,
-    className: "bg-accent/20 text-accent",
+    className: "bg-purple-100 text-purple-600",
   },
 };
 
