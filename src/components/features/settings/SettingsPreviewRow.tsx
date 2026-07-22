@@ -1,7 +1,8 @@
+import type { ComponentType } from 'react'
 import { cn } from '@/lib/utils'
 
 interface SettingsPreviewRowProps {
-  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>
+  icon: ComponentType<{ className?: string }>
   label: string
   value?: string | null
   href?: string

@@ -8,6 +8,7 @@ import {
   Megaphone,
   Pencil,
   ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
 import { Badge, Card, CardContent } from "@/components/ui";
 import type { ActivityItem } from "@/lib/types";
@@ -41,7 +42,7 @@ const typeBadge: Record<
 const typeAvatar: Record<
   ActivityItem["type"],
   {
-    icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+    icon: LucideIcon;
     className: string;
   }
 > = {
