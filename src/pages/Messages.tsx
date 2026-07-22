@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ChevronDown, Search } from 'lucide-react'
 import { Button, type Selection } from '@heroui/react'
@@ -6,11 +7,14 @@ import { Input } from '@/components/ui'
 import { LoadingSpinner, PageHeader } from '@/components/shared'
 import { MessageDetail, MessagesList } from '@/components/features/messages'
 import {
+  useAuth,
   useConfirm,
   useDeleteMessage,
   useMarkMessageRead,
   useMessages,
 } from '@/hooks'
+import { can, PERMISSION_DENIED_MESSAGE } from '@/lib/permissions'
+import { addToast } from '@heroui/react'
 import { cn } from '@/lib/utils'
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -25,6 +29,10 @@ export default function Messages(): React.ReactElement {
   const { mutate: markAsRead } = useMarkMessageRead()
   const deleteMessage = useDeleteMessage()
   const { confirm } = useConfirm()
+  const { user } = useAuth()
+  const canManage = can(user?.role, 'manageContent')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const messageIdFromQuery = searchParams.get('id')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [checkedKeys, setCheckedKeys] = useState<Selection>(new Set())
   const [search, setSearch] = useState('')
@@ -54,16 +62,41 @@ export default function Messages(): React.ReactElement {
     filtered[0] ??
     null
 
+  /**
+   * Opens a message from a notification deep-link (`/messages?id=`).
+   */
+  useEffect(() => {
+    if (!messageIdFromQuery || messages.length === 0) return
+    const target = messages.find((message) => message.id === messageIdFromQuery)
+    if (!target) return
+
+    didInitSelect.current = true
+    setSelectedId(target.id)
+    if (canManage && !target.read) {
+      markAsRead(target.id)
+    }
+
+    setSearchParams(
+      (prev) => {
+        if (!prev.has('id')) return prev
+        const next = new URLSearchParams(prev)
+        next.delete('id')
+        return next
+      },
+      { replace: true },
+    )
+  }, [messageIdFromQuery, messages, canManage, markAsRead, setSearchParams])
+
   useEffect(() => {
     if (didInitSelect.current || messages.length === 0) return
     const first = messages[0]
     if (!first) return
     didInitSelect.current = true
     setSelectedId(first.id)
-    if (!first.read) {
+    if (canManage && !first.read) {
       markAsRead(first.id)
     }
-  }, [messages, markAsRead])
+  }, [messages, markAsRead, canManage])
 
   /**
    * Selects a message and marks it as read when unread.
@@ -71,7 +104,7 @@ export default function Messages(): React.ReactElement {
   function handleSelect(id: string): void {
     setSelectedId(id)
     const message = messages.find((m) => m.id === id)
-    if (message && !message.read) {
+    if (canManage && message && !message.read) {
       markAsRead(id)
     }
   }
@@ -80,6 +113,10 @@ export default function Messages(): React.ReactElement {
    * Confirms deletion, then removes the message and clears selection if needed.
    */
   async function handleDelete(id: string): Promise<void> {
+    if (!canManage) {
+      addToast({ title: PERMISSION_DENIED_MESSAGE, color: 'danger' })
+      return
+    }
     const message = messages.find((m) => m.id === id)
     const confirmed = await confirm({
       title: 'Delete message?',
@@ -235,6 +272,7 @@ export default function Messages(): React.ReactElement {
               message={selected}
               onDelete={(id) => void handleDelete(id)}
               isDeleting={deleteMessage.isPending}
+              canDelete={canManage}
             />
           </div>
         </motion.div>

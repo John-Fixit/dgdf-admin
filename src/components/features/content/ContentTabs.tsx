@@ -1,11 +1,11 @@
-import { motion } from 'framer-motion'
-import { CONTENT_TABS } from './contentBlocks'
-import type { ContentPageKey } from '@/lib/types'
-import { cn } from '@/lib/utils'
+import { motion } from "framer-motion";
+import { CONTENT_TABS } from "./contentBlocks";
+import type { ContentPageKey } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface ContentTabsProps {
-  active: ContentPageKey
-  onChange: (page: ContentPageKey) => void
+  active: ContentPageKey;
+  onChange: (page: ContentPageKey) => void;
 }
 
 /**
@@ -22,17 +22,17 @@ export function ContentTabs({
     >
       <ul className="flex gap-1 overflow-x-auto scrollbar-thin">
         {CONTENT_TABS.map((tab) => {
-          const isActive = tab.key === active
+          const isActive = tab.key === active;
           return (
             <li key={tab.key} className="relative">
               <button
                 type="button"
                 onClick={() => onChange(tab.key)}
                 className={cn(
-                  'relative px-5 py-3.5 text-sm font-semibold tracking-wide transition-colors',
+                  "relative px-5 py-3.5 text-sm font-semibold tracking-wide transition-colors cursor-pointer",
                   isActive
-                    ? 'text-primary'
-                    : 'text-slate-400 hover:text-slate-600',
+                    ? "text-primary"
+                    : "text-slate-400 hover:text-slate-600",
                 )}
               >
                 {tab.label}
@@ -40,14 +40,14 @@ export function ContentTabs({
                   <motion.span
                     layoutId="content-tab-indicator"
                     className="absolute inset-x-3 -bottom-px h-[3px] rounded-full bg-accent"
-                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 ) : null}
               </button>
             </li>
-          )
+          );
         })}
       </ul>
     </nav>
-  )
+  );
 }

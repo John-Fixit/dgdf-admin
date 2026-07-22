@@ -58,49 +58,55 @@ export function AttentionPanel({
             </span>
           </div>
 
-          <ul className="space-y-3">
-            {alerts.map((alert, index) => {
-              const style = severityStyles[alert.severity]
-              const Icon = style.icon
-              return (
-                <motion.li
-                  key={alert.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.48 + index * 0.05, ease: EASE }}
-                >
-                  <Link
-                    to={alert.href}
-                    className={cn(
-                      'group flex items-start gap-3 rounded-xl border bg-white p-4 transition-all hover:shadow-ambient',
-                      style.border,
-                    )}
+          {alerts.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
+              Nothing needs attention right now.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {alerts.map((alert, index) => {
+                const style = severityStyles[alert.severity]
+                const Icon = style.icon
+                return (
+                  <motion.li
+                    key={alert.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.48 + index * 0.05, ease: EASE }}
                   >
-                    <span
+                    <Link
+                      to={alert.href}
                       className={cn(
-                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-                        style.badge,
+                        'group flex items-start gap-3 rounded-xl border bg-white p-4 transition-all hover:shadow-ambient',
+                        style.border,
                       )}
                     >
-                      <Icon className="h-4 w-4" aria-hidden />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-primary">
-                        {alert.title}
+                      <span
+                        className={cn(
+                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                          style.badge,
+                        )}
+                      >
+                        <Icon className="h-4 w-4" aria-hidden />
                       </span>
-                      <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
-                        {alert.detail}
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-primary">
+                          {alert.title}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                          {alert.detail}
+                        </span>
+                        <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-accent">
+                          {alert.actionLabel}
+                          <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </span>
                       </span>
-                      <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-accent">
-                        {alert.actionLabel}
-                        <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      </span>
-                    </span>
-                  </Link>
-                </motion.li>
-              )
-            })}
-          </ul>
+                    </Link>
+                  </motion.li>
+                )
+              })}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </motion.section>

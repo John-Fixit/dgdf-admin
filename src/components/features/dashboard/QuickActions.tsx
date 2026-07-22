@@ -1,47 +1,47 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Camera,
   FileText,
   HandHeart,
   Mail,
   type LucideIcon,
-} from 'lucide-react'
-import { Card, CardContent } from '@/components/ui'
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui";
 
-const EASE = [0.22, 1, 0.36, 1] as const
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 const ACTIONS: {
-  label: string
-  description: string
-  href: string
-  icon: LucideIcon
+  label: string;
+  description: string;
+  href: string;
+  icon: LucideIcon;
 }[] = [
   {
-    label: 'Add gallery media',
-    description: 'Upload photos & videos',
-    href: '/gallery',
+    label: "Add gallery media",
+    description: "Upload photos & videos",
+    href: "/gallery",
     icon: Camera,
   },
   {
-    label: 'Review inbox',
-    description: 'Partnership & inquiries',
-    href: '/messages',
+    label: "Review inbox",
+    description: "Partnership & inquiries",
+    href: "/messages",
     icon: Mail,
   },
   {
-    label: 'Update site content',
-    description: 'Editorial control center',
-    href: '/content',
+    label: "Update site content",
+    description: "Editorial control center",
+    href: "/content",
     icon: FileText,
   },
   {
-    label: 'Donation ledger',
-    description: 'Funds & transaction status',
-    href: '/donations',
+    label: "Donation ledger",
+    description: "Funds & transaction status",
+    href: "/donations",
     icon: HandHeart,
   },
-]
+];
 
 /**
  * Shortcut grid into high-value admin workflows.
@@ -64,19 +64,20 @@ export function QuickActions(): React.ReactElement {
           </h2>
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {ACTIONS.map((action, index) => {
-              const Icon = action.icon
+              const Icon = action.icon;
               return (
                 <motion.li
                   key={action.href}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.38 + index * 0.05, ease: EASE }}
+                  className="h-full"
                 >
                   <Link
                     to={action.href}
-                    className="group flex items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-all hover:border-primary/30 hover:bg-white hover:shadow-ambient"
+                    className="group flex h-full items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-all hover:border-primary/30 hover:bg-white hover:shadow-ambient"
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-400 group-hover:bg-primary group-hover:text-white">
                       <Icon className="h-4 w-4" aria-hidden />
                     </span>
                     <span className="min-w-0">
@@ -89,11 +90,11 @@ export function QuickActions(): React.ReactElement {
                     </span>
                   </Link>
                 </motion.li>
-              )
+              );
             })}
           </ul>
         </CardContent>
       </Card>
     </motion.section>
-  )
+  );
 }

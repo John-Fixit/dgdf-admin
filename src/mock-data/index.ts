@@ -1,14 +1,10 @@
 import type {
-  ActivityItem,
-  DashboardAlert,
-  DashboardStats,
   Donation,
-  FundChannel,
   GalleryItem,
-  ImpactChartPoint,
+  LeadershipMember,
   Message,
-  OutreachProgram,
   SiteContentDocument,
+  SiteSettings,
 } from "@/lib/types";
 
 /** Seed gallery images */
@@ -20,10 +16,14 @@ export const mockGallery: GalleryItem[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&q=80',
     category: 'Impact Event',
+    status: 'active',
+    sortOrder: 1,
+    mediaType: 'image',
     location: 'Lagos',
     fileSize: '1.2 MB',
     format: 'JPG',
     createdAt: '2026-06-12T10:00:00.000Z',
+    updatedAt: '2026-06-12T10:00:00.000Z',
   },
   {
     id: 'gal-2',
@@ -32,9 +32,13 @@ export const mockGallery: GalleryItem[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800&q=80',
     category: 'Infrastructure',
+    status: 'active',
+    sortOrder: 2,
+    mediaType: 'image',
     fileSize: '2.8 MB',
     format: 'PNG',
     createdAt: '2026-05-28T14:30:00.000Z',
+    updatedAt: '2026-05-28T14:30:00.000Z',
   },
   {
     id: 'gal-3',
@@ -43,9 +47,13 @@ export const mockGallery: GalleryItem[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80',
     category: 'Education',
+    status: 'active',
+    sortOrder: 3,
+    mediaType: 'image',
     fileSize: '1.5 MB',
     format: 'JPG',
     createdAt: '2026-05-10T09:15:00.000Z',
+    updatedAt: '2026-05-10T09:15:00.000Z',
   },
   {
     id: 'gal-4',
@@ -54,9 +62,13 @@ export const mockGallery: GalleryItem[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80',
     category: 'Outreach',
+    status: 'draft',
+    sortOrder: 4,
+    mediaType: 'image',
     fileSize: '940 KB',
     format: 'JPG',
     createdAt: '2026-04-22T18:00:00.000Z',
+    updatedAt: '2026-04-22T18:00:00.000Z',
   },
   {
     id: 'gal-5',
@@ -65,9 +77,13 @@ export const mockGallery: GalleryItem[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80',
     category: 'Infrastructure',
+    status: 'active',
+    sortOrder: 5,
+    mediaType: 'image',
     fileSize: '3.2 MB',
-    format: 'RAW',
+    format: 'JPG',
     createdAt: '2026-04-05T11:45:00.000Z',
+    updatedAt: '2026-04-05T11:45:00.000Z',
   },
   {
     id: 'gal-6',
@@ -76,18 +92,15 @@ export const mockGallery: GalleryItem[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1529390079861-591de354faf5?w=800&q=80',
     category: 'Education',
+    status: 'archived',
+    sortOrder: 6,
+    mediaType: 'image',
     fileSize: '1.8 MB',
     format: 'JPG',
     createdAt: '2026-03-18T13:20:00.000Z',
+    updatedAt: '2026-03-18T13:20:00.000Z',
   },
 ]
-
-/** Gallery storage stats shown on Gallery Manager (API wiring later) */
-export const mockGalleryStats = {
-  totalAssets: 128,
-  storageUsed: '2.4 GB',
-  storageLimit: '10 GB',
-} as const;
 
 /** Seed donations */
 export const mockDonations: Donation[] = [
@@ -265,6 +278,84 @@ export const mockMessages: Message[] = [
   },
 ];
 
+/** Leadership / board members shown on the public About page */
+export const mockLeadership: LeadershipMember[] = [
+  {
+    id: 'lead-1',
+    name: 'Dr. Adebayo Ogunlesi',
+    role: 'Founder & CEO',
+    bio: 'A visionary philanthropist with over 20 years of experience in strategic development and international relations.',
+    photoUrl:
+      'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&h=1000&fit=crop',
+    sortOrder: 1,
+    status: 'published',
+    isFounder: true,
+    createdAt: '2026-01-10T09:00:00.000Z',
+    updatedAt: '2026-07-18T10:00:00.000Z',
+  },
+  {
+    id: 'lead-2',
+    name: 'Chioma Nnaji',
+    role: 'Operations Director',
+    bio: 'Leading our ground-level execution with a focus on operational excellence and sustainable community impact.',
+    photoUrl:
+      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=1000&fit=crop',
+    sortOrder: 2,
+    status: 'published',
+    isFounder: false,
+    createdAt: '2026-01-10T09:00:00.000Z',
+    updatedAt: '2026-07-18T10:00:00.000Z',
+  },
+  {
+    id: 'lead-3',
+    name: 'Olusola Alake',
+    role: 'Board Chairman',
+    bio: 'Ensuring the highest standards of governance and strategic foresight across all foundation activities.',
+    photoUrl:
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&h=1000&fit=crop',
+    sortOrder: 3,
+    status: 'published',
+    isFounder: false,
+    createdAt: '2026-01-10T09:00:00.000Z',
+    updatedAt: '2026-07-18T10:00:00.000Z',
+  },
+  {
+    id: 'lead-4',
+    name: 'Zainab Bello',
+    role: 'Head of Impact',
+    bio: 'Dedicated to measuring and scaling our humanitarian efforts to reach the most vulnerable populations.',
+    photoUrl:
+      'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&h=1000&fit=crop',
+    sortOrder: 4,
+    status: 'draft',
+    isFounder: false,
+    createdAt: '2026-03-02T11:00:00.000Z',
+    updatedAt: '2026-07-10T14:30:00.000Z',
+  },
+];
+
+/** Global site settings seed — org identity, contact, social */
+export const mockSiteSettings: SiteSettings = {
+  organization: {
+    name: 'Divine Gospel Delight Foundation',
+    tagline: 'Humanitarian Impact in Nigeria',
+    logoUrl: '',
+  },
+  contact: {
+    phone: '+234 (0) 800 DELIGHT',
+    email: 'info@dgdelightfound.org',
+    address: '12 Corporate Way, Victoria Island, Lagos, Nigeria',
+    officeHours: 'Monday – Friday: 9:00 AM – 5:00 PM',
+  },
+  social: {
+    facebook: 'https://facebook.com/dgdelightfound',
+    instagram: 'https://instagram.com/dgdelightfound',
+    youtube: 'https://youtube.com/@dgdelightfound',
+    twitter: 'https://twitter.com/dgdelightfound',
+  },
+  lastUpdatedAt: '2026-07-18T10:00:00.000Z',
+};
+
 /** Editable site content seed — Content Manager sections */
 export const mockContent: SiteContentDocument = {
   home: {
@@ -316,6 +407,54 @@ export const mockContent: SiteContentDocument = {
         'A dedicated board guiding the foundation with faith, discipline, and operational excellence.',
     },
   },
+  founder: {
+    profile: {
+      label: 'The Founder',
+      name: 'Dr. Adebayo Ogunlesi',
+      role: 'Founder & CEO',
+      photoUrl:
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=1200&h=1500&fit=crop',
+      intro:
+        'A visionary philanthropist whose faith, discipline, and devotion to community excellence shaped the foundation’s mission to restore hope and dignity across Nigeria.',
+    },
+    article: {
+      label: 'His Story',
+      headline: 'A life devoted to service and excellence',
+      body: 'Dr. Adebayo Ogunlesi founded Divine Gospel Delight Foundation with a clear conviction: humanitarian work should be marked by excellence, dignity, and lasting impact—not spectacle.\n\nRaised with a deep sense of faith and responsibility, he saw early how poverty and limited opportunity could steal delight from entire communities. That awareness became a calling.\n\nUnder his leadership, DGDF has pursued a standard of delivery rarely associated with charity—precise planning, accountable stewardship, and programs designed to help people move from surviving to thriving.',
+    },
+    quote: {
+      quote:
+        'Our mission transcends mere charity; it is a divine commitment to uplift the vulnerable and showcase the true spirit of African resilience through tangible impact.',
+      attribution: 'Dr. Adebayo Ogunlesi',
+    },
+    cta: {
+      headline: 'Continue the Work He Began',
+      body: 'Support the programs and communities shaped by this vision—your partnership helps restore hope with excellence and dignity.',
+      primaryLabel: 'Support Our Work',
+      secondaryLabel: 'Back to About',
+    },
+  },
+  gallery: {
+    hero: {
+      label: 'Our Visual Narrative',
+      headline: 'Capturing the Heart of Every Outreach',
+      body: 'A documentary-style journey through the communities we serve. These are the faces of hope, the hands of change, and the spirit of a community united in faith and service.',
+    },
+    testimonial: {
+      quote:
+        "The Divine Gospel Delight Foundation didn't just give us resources; they gave us hope. Our community has seen a transformation that only grace could bring.",
+      name: 'Sister Ngozi Adeyemi',
+      role: 'Community Leader, Lagos Outreach',
+      photoUrl:
+        'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=400&fit=crop',
+    },
+    cta: {
+      headline: 'Be Part of the Next Chapter',
+      body: 'Your support allows us to continue documenting and creating these stories of transformation. Every donation directly funds our next outreach.',
+      primaryLabel: 'Donate Now',
+      secondaryLabel: 'Join as Volunteer',
+    },
+  },
   donate: {
     hero: {
       headline: 'Your Generosity, Their Future.',
@@ -354,216 +493,3 @@ export const mockContent: SiteContentDocument = {
   },
   lastUpdatedAt: '2026-07-18T10:00:00.000Z',
 };
-
-/**
- * Computes dashboard stats from current mock datasets.
- */
-export function computeDashboardStats(
-  gallery: GalleryItem[],
-  donations: Donation[],
-  messages: Message[],
-  content: SiteContentDocument,
-): DashboardStats {
-  const completed = donations.filter((d) => d.status === "success");
-  const sectionCount = Object.keys(content).filter(
-    (key) => key !== "lastUpdatedAt",
-  ).length;
-  return {
-    donationsTotal: completed.reduce((sum, d) => sum + d.amount, 0),
-    donationsCount: donations.length,
-    messagesUnread: messages.filter((m) => !m.read).length,
-    galleryCount: gallery.length,
-    contentKeys: sectionCount,
-  };
-}
-
-/** Analytics metrics shown on the Foundation Analytics dashboard */
-export const mockAnalyticsMetrics = {
-  donations: {
-    label: "Total Funds Raised",
-    value: "₦42.8M",
-    trend: "↑ 12.5%",
-    trendPositive: true,
-    subtitle: "vs last month",
-  },
-  livesImpacted: {
-    label: "Lives Impacted",
-    value: "12,402",
-    trend: "↑ 8.2%",
-    trendPositive: true,
-    subtitle: "new reach this quarter",
-  },
-  activePrograms: {
-    label: "Active Programs",
-    value: "24",
-    trend: "4",
-    trendPositive: false,
-    subtitle: "pending review",
-  },
-  unreadMessages: {
-    label: "Inbox Attention",
-    value: "3",
-    trend: "2 new",
-    trendPositive: false,
-    subtitle: "awaiting reply",
-  },
-} as const;
-
-/** Monthly impact projection bars (API wiring later) */
-export const mockImpactChart: ImpactChartPoint[] = [
-  { label: "Jan", value: 40 },
-  { label: "Feb", value: 60 },
-  { label: "Mar", value: 50 },
-  { label: "Apr", value: 85, isPeak: true },
-  { label: "May", value: 45 },
-  { label: "Jun", value: 70 },
-  { label: "Jul", value: 62 },
-  { label: "Aug", value: 78 },
-];
-
-/** Yearly impact projection bars (API wiring later) */
-export const mockImpactChartYearly: ImpactChartPoint[] = [
-  { label: "2021", value: 35 },
-  { label: "2022", value: 48 },
-  { label: "2023", value: 62 },
-  { label: "2024", value: 74 },
-  { label: "2025", value: 88, isPeak: true },
-  { label: "2026", value: 71 },
-];
-
-/** Fund allocation channels (API wiring later) */
-export const mockFundChannels: FundChannel[] = [
-  {
-    id: "ch-education",
-    label: "Education & Scholarships",
-    percent: 38,
-    amountLabel: "₦16.3M",
-    tone: "primary",
-  },
-  {
-    id: "ch-health",
-    label: "Health & Outreach",
-    percent: 29,
-    amountLabel: "₦12.4M",
-    tone: "accent",
-  },
-  {
-    id: "ch-community",
-    label: "Community Relief",
-    percent: 21,
-    amountLabel: "₦9.0M",
-    tone: "warm",
-  },
-  {
-    id: "ch-ops",
-    label: "Operations & Stewardship",
-    percent: 12,
-    amountLabel: "₦5.1M",
-    tone: "slate",
-  },
-];
-
-/** Items requiring operator attention (API wiring later) */
-export const mockDashboardAlerts: DashboardAlert[] = [
-  {
-    id: "alert-1",
-    severity: "critical",
-    title: "Failed donation needs review",
-    detail: "Samuel Yusuf · ₦1,000,000 · #DGD-8543",
-    href: "/donations",
-    actionLabel: "Open ledger",
-  },
-  {
-    id: "alert-2",
-    severity: "warning",
-    title: "2 unread partnership inquiries",
-    detail: "Corporate CSR and media interview awaiting response",
-    href: "/messages",
-    actionLabel: "Open inbox",
-  },
-  {
-    id: "alert-3",
-    severity: "info",
-    title: "Gallery assets pending curation",
-    detail: "4 new uploads ready for public gallery review",
-    href: "/gallery",
-    actionLabel: "Review gallery",
-  },
-];
-
-/** Latest activity feed (API wiring later) */
-export const mockActivityFeed: ActivityItem[] = [
-  {
-    id: "act-1",
-    type: "donation",
-    actorName: "Mrs. Adebayo",
-    title: "made a donation to the",
-    highlight: "Scholarship Fund",
-    timeAgo: "2 mins ago",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=96&h=96&fit=crop",
-  },
-  {
-    id: "act-2",
-    type: "story",
-    title: "New Impact Story published:",
-    highlight: '"Healing in Lagos State"',
-    timeAgo: "4 hours ago",
-  },
-  {
-    id: "act-3",
-    type: "update",
-    actorName: "Emeka Obi",
-    title: "updated 12 records in the Medical Outreach program.",
-    timeAgo: "6 hours ago",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop",
-  },
-  {
-    id: "act-4",
-    type: "system",
-    title: "System verification completed for",
-    highlight: "Annual Transparency Report",
-    timeAgo: "Yesterday",
-  },
-  {
-    id: "act-5",
-    type: "donation",
-    actorName: "Amina Danjuma",
-    title: "completed a major gift of",
-    highlight: "₦2,500,000",
-    timeAgo: "Yesterday",
-  },
-];
-
-/** Active outreach programs table (API wiring later) */
-export const mockOutreachPrograms: OutreachProgram[] = [
-  {
-    id: "prog-1",
-    name: "Lagos Medical Outreach",
-    region: "South West",
-    status: "active",
-    budgetUsedPercent: 75,
-  },
-  {
-    id: "prog-2",
-    name: "Abuja Education Support",
-    region: "North Central",
-    status: "in_review",
-    budgetUsedPercent: 32,
-  },
-  {
-    id: "prog-3",
-    name: "Enugu Water Project",
-    region: "South East",
-    status: "active",
-    budgetUsedPercent: 88,
-  },
-  {
-    id: "prog-4",
-    name: "Kano Youth Mentorship",
-    region: "North Central",
-    status: "paused",
-    budgetUsedPercent: 18,
-  },
-];

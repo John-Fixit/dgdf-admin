@@ -1,3 +1,7 @@
 export { GalleryGrid } from './GalleryGrid'
 export { GalleryUploadForm } from './GalleryUploadForm'
 export { GalleryViewPanel } from './GalleryViewPanel'
+export { GalleryCard } from './GalleryCard'
+export { GalleryEditForm } from './GalleryEditForm'
+export { GallerySkeleton } from './GallerySkeleton'
+export { GalleryEmptyState, GalleryErrorState } from './GalleryStates'

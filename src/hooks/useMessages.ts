@@ -1,14 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { deleteMessage, fetchMessages, markMessageRead } from '@/lib/api'
 import { QUERY_KEYS } from '@/lib/constants'
+import { invalidateOpsCaches } from '@/lib/invalidateOps'
 
 /**
  * Fetches contact messages via TanStack Query.
+ * Polls periodically so new public contact submissions surface in the UI.
  */
 export function useMessages() {
   return useQuery({
     queryKey: QUERY_KEYS.messages,
     queryFn: fetchMessages,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -22,7 +26,7 @@ export function useMarkMessageRead() {
     mutationFn: (id: string) => markMessageRead(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.messages })
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard })
+      await invalidateOpsCaches(queryClient)
     },
   })
 }
@@ -37,7 +41,7 @@ export function useDeleteMessage() {
     mutationFn: (id: string) => deleteMessage(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.messages })
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard })
+      await invalidateOpsCaches(queryClient)
     },
   })
 }

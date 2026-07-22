@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ContentBlockGrid,
   ContentEditForm,
@@ -8,36 +8,44 @@ import {
   ContentTabs,
   getSectionValues,
   type ContentBlockDef,
-} from '@/components/features/content'
-import { useContent, useDrawer } from '@/hooks'
-import { formatDateTime } from '@/lib/utils'
-import type { ContentPageKey } from '@/lib/types'
+} from "@/components/features/content";
+import { useContent, useDrawer, useAuth } from "@/hooks";
+import { formatDateTime } from "@/lib/utils";
+import { can, PERMISSION_DENIED_MESSAGE } from "@/lib/permissions";
+import { addToast } from "@heroui/react";
+import type { ContentPageKey } from "@/lib/types";
 
-const EASE = [0.22, 1, 0.36, 1] as const
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
  * Content Manager — card-based CMS for public website sections.
  */
 export default function ContentEditor(): React.ReactElement {
-  const { data, isLoading, isError, error, refetch, isFetching } = useContent()
-  const { open } = useDrawer()
-  const [activePage, setActivePage] = useState<ContentPageKey>('home')
+  const { data, isLoading, isError, error, refetch, isFetching } = useContent();
+  const { open } = useDrawer();
+  const { user } = useAuth();
+  const [activePage, setActivePage] = useState<ContentPageKey>("home");
+  const canEdit = can(user?.role, "manageContent");
 
   function handleEdit(block: ContentBlockDef): void {
-    if (!data) return
+    if (!canEdit) {
+      addToast({ title: PERMISSION_DENIED_MESSAGE, color: "danger" });
+      return;
+    }
+    if (!data) return;
 
     open({
       title: block.title,
       description: block.description,
-      size: 'lg',
-      placement: 'right',
+      size: "2xl",
+      placement: "right",
       content: (
         <ContentEditForm
           block={block}
           initialValues={getSectionValues(data, block)}
         />
       ),
-    })
+    });
   }
 
   return (
@@ -57,7 +65,7 @@ export default function ContentEditor(): React.ReactElement {
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-slate-200/80 bg-white px-4 py-2 shadow-ambient sm:self-auto">
+        <div className="inline-flex items-center gap-2.5 self-start rounded-xl border border-slate-200/80 bg-white px-4 py-2 shadow-ambient sm:self-auto">
           <span
             className="h-2 w-2 rounded-full bg-success shadow-[0_0_0_3px_rgba(22,163,74,0.15)]"
             aria-hidden
@@ -82,7 +90,7 @@ export default function ContentEditor(): React.ReactElement {
       {isError ? (
         <ContentErrorState
           message={
-            error instanceof Error ? error.message : 'Failed to load content'
+            error instanceof Error ? error.message : "Failed to load content"
           }
           onRetry={() => void refetch()}
         />
@@ -100,11 +108,12 @@ export default function ContentEditor(): React.ReactElement {
             <ContentBlockGrid
               page={activePage}
               content={data}
+              canEdit={canEdit}
               onEdit={handleEdit}
             />
           </motion.div>
         </AnimatePresence>
       ) : null}
     </div>
-  )
+  );
 }

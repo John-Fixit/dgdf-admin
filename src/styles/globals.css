@@ -5,23 +5,22 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-sidebar: #0f2744;
-  --color-surface: #f4f6f9;
+  --color-sidebar: #0c1f36;
+  --color-surface: #f6f7f9;
   --color-primary: #1a3a5c;
   --color-primary-foreground: #ffffff;
-  --color-accent: #f0a500;
-  --color-accent-foreground: #0f2744;
+  --color-accent: #e8a317;
+  --color-accent-foreground: #0c1f36;
   --color-success: #16a34a;
   --color-success-foreground: #ffffff;
   --color-error: #dc2626;
   --color-error-foreground: #ffffff;
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
-  --shadow-card:
-    0 1px 3px 0 rgb(15 39 68 / 0.06), 0 1px 2px -1px rgb(15 39 68 / 0.06);
+  --shadow-card: 0 1px 2px 0 rgb(15 39 68 / 0.04);
   --shadow-login: 0 4px 24px rgb(26 58 92 / 0.06);
-  --shadow-luxury: 0 10px 30px -15px rgba(26, 58, 92, 0.08);
-  --shadow-ambient: 0 20px 40px -10px rgba(26, 58, 92, 0.04);
+  --shadow-luxury: 0 8px 24px -12px rgba(26, 58, 92, 0.1);
+  --shadow-ambient: 0 16px 32px -16px rgba(26, 58, 92, 0.06);
 }
 
 @layer base {
@@ -76,5 +75,19 @@
   .sidebar-scroll::-webkit-scrollbar-thumb {
     background: rgb(255 255 255 / 0.12);
     border-radius: 2px;
+  }
+
+  @keyframes badge-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .animate-badge-blink {
+    animation: badge-blink 1.4s ease-in-out infinite;
   }
 }

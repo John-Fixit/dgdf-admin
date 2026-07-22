@@ -1,85 +1,127 @@
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Button } from '@heroui/react'
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@heroui/react";
 import {
-  ChevronLeft,
-  Church,
   FileText,
   HeartHandshake,
   Images,
   LayoutDashboard,
   LogOut,
   Mail,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ScrollText,
+  Settings,
+  SlidersHorizontal,
+  Users,
   X,
-} from 'lucide-react'
-import { APP_NAME, APP_TAGLINE, NAV_ITEMS } from '@/lib/constants'
-import { loginPathWithFrom } from '@/lib/authRedirect'
-import { cn } from '@/lib/utils'
-import { useAuth, useConfirm, useMessages } from '@/hooks'
-import { useUiStore } from '@/store/uiStore'
+} from "lucide-react";
+import {
+  APP_NAME,
+  APP_TAGLINE,
+  NAV_GROUPS,
+  type NavGroup,
+  type NavIconName,
+} from "@/lib/constants";
+import { loginPathWithFrom } from "@/lib/authRedirect";
+import { can } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
+import { useAuth, useConfirm, useMessages } from "@/hooks";
+import { useUiStore } from "@/store/uiStore";
+import type { AdminRole } from "@/lib/types";
 
-const iconMap = {
+const ROLE_TITLES: Record<AdminRole, string> = {
+  super_admin: "Super Admin",
+  admin: "Administrator",
+  viewer: "Viewer",
+};
+
+/**
+ * Filters nav groups so viewers/admins only see allowed routes.
+ */
+function filterNavGroups(
+  groups: NavGroup[],
+  role: AdminRole | undefined,
+): NavGroup[] {
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (item.path === "/administrators") {
+          return can(role, "viewAdmins");
+        }
+        return true;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+const iconMap: Record<
+  NavIconName,
+  React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>
+> = {
   LayoutDashboard,
   Images,
   FileText,
+  Users,
+  Settings,
+  SlidersHorizontal,
   HeartHandshake,
   Mail,
-} as const
+  ScrollText,
+};
 
 /**
  * Returns initials from a display name for the avatar fallback.
  */
 function getUserInitials(name?: string | null): string {
-  if (!name?.trim()) return 'DG'
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return 'DG'
-  const first = parts[0] ?? ''
-  if (parts.length === 1) return first.slice(0, 2).toUpperCase()
-  const last = parts[parts.length - 1] ?? ''
-  return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase()
+  if (!name?.trim()) return "DG";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "DG";
+  const first = parts[0] ?? "";
+  if (parts.length === 1) return first.slice(0, 2).toUpperCase();
+  const last = parts[parts.length - 1] ?? "";
+  return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
 }
 
 /**
- * Fixed admin sidebar with desktop collapse and mobile drawer.
+ * Fixed admin sidebar — grouped nav, collapse, and mobile drawer.
  */
 export function Sidebar(): React.ReactElement {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { user, logout } = useAuth()
-  const { confirm } = useConfirm()
-  const messagesQuery = useMessages()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuth();
+  const { confirm } = useConfirm();
+  const messagesQuery = useMessages();
   const unreadCount =
-    messagesQuery.data?.filter((message) => !message.read).length ?? 0
+    messagesQuery.data?.filter((message) => !message.read).length ?? 0;
 
-  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed)
-  const mobileOpen = useUiStore((s) => s.mobileOpen)
-  const toggleCollapsed = useUiStore((s) => s.toggleCollapsed)
-  const setMobileOpen = useUiStore((s) => s.setMobileOpen)
+  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
+  const mobileOpen = useUiStore((s) => s.mobileOpen);
+  const toggleCollapsed = useUiStore((s) => s.toggleCollapsed);
+  const setMobileOpen = useUiStore((s) => s.setMobileOpen);
 
-  const userInitials = getUserInitials(user?.name)
+  const userInitials = getUserInitials(user?.name);
+  const navGroups = filterNavGroups(NAV_GROUPS, user?.role);
+  const roleTitle = user?.role
+    ? ROLE_TITLES[user.role]
+    : user?.title ?? "Administrator";
 
-  /**
-   * Closes the mobile drawer after navigation.
-   */
   function handleNavigate(): void {
-    setMobileOpen(false)
+    setMobileOpen(false);
   }
 
-  /**
-   * Confirms sign-out, clears session, and returns to login with return path.
-   */
   async function handleSignOut(): Promise<void> {
     const confirmed = await confirm({
-      title: 'Sign out?',
-      description:
-        'You will need to sign in again to access the admin portal.',
-      confirmLabel: 'Sign out',
-      cancelLabel: 'Cancel',
-      variant: 'danger',
-    })
-    if (!confirmed) return
+      title: "Sign out?",
+      description: "You will need to sign in again to access the admin portal.",
+      confirmLabel: "Sign out",
+      cancelLabel: "Cancel",
+      variant: "danger",
+    });
+    if (!confirmed) return;
 
-    await logout()
-    navigate(loginPathWithFrom(location.pathname), { replace: true })
+    await logout();
+    navigate(loginPathWithFrom(location.pathname), { replace: true });
   }
 
   return (
@@ -91,10 +133,10 @@ export function Sidebar(): React.ReactElement {
         variant="light"
         disableAnimation
         className={cn(
-          'fixed inset-0 z-40 h-auto min-h-0 w-auto min-w-0 rounded-none bg-black/45 p-0 backdrop-blur-[2px] transition-opacity duration-200 data-[hover=true]:bg-black/45 lg:hidden',
+          "fixed inset-0 z-40 h-auto min-h-0 w-auto min-w-0 rounded-none bg-slate-950/40 p-0 backdrop-blur-[1px] transition-opacity duration-200 data-[hover=true]:bg-slate-950/40 lg:hidden",
           mobileOpen
-            ? 'pointer-events-auto opacity-100'
-            : 'pointer-events-none opacity-0',
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0",
         )}
         aria-label="Close sidebar"
       />
@@ -102,102 +144,120 @@ export function Sidebar(): React.ReactElement {
       <aside
         aria-label="Admin navigation"
         className={cn(
-          'fixed left-0 top-0 z-50 flex h-svh flex-col bg-sidebar py-5 shadow-2xl',
-          'w-[280px] transition-[transform,width] duration-300 ease-out',
-          sidebarCollapsed ? 'lg:w-[76px]' : 'lg:w-[280px]',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          "fixed left-0 top-0 z-50 flex h-svh flex-col border-r border-white/[0.06] bg-sidebar font-display",
+          "w-[260px] transition-[transform,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          sidebarCollapsed ? "lg:w-[68px]" : "lg:w-[260px]",
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
+        {/* Brand */}
         <div
           className={cn(
-            'mb-2 flex items-center gap-3 px-5 transition-[padding] duration-200',
-            sidebarCollapsed && 'lg:justify-center lg:px-3',
+            "flex h-20 shrink-0 items-center gap-3 border-b border-white/6 px-4",
+            sidebarCollapsed && "lg:justify-center lg:px-2",
           )}
         >
           <Link
             to="/dashboard"
             onClick={handleNavigate}
-            className="flex shrink-0 items-center gap-2"
+            className="flex min-w-0 items-center gap-3"
             aria-label={`${APP_NAME} home`}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent/80 bg-primary text-accent shadow-inner">
-              <Church className="h-5 w-5" aria-hidden />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-[12px] font-bold tracking-wide text-accent-foreground">
+              DGD
+            </span>
+            <span
+              className={cn(
+                "min-w-0 transition-[opacity,transform,width] duration-200",
+                sidebarCollapsed &&
+                  "lg:pointer-events-none lg:w-0 lg:overflow-hidden lg:opacity-0",
+              )}
+            >
+              <span className="block truncate text-[14px] font-semibold text-white">
+                {APP_NAME} Admin
+              </span>
+              <span className="block truncate text-[12px] text-white/40">
+                {APP_TAGLINE}
+              </span>
             </span>
           </Link>
-
-          <div
-            className={cn(
-              'min-w-0 transition-[opacity,transform] duration-200',
-              sidebarCollapsed &&
-                'lg:pointer-events-none lg:-translate-x-2 lg:opacity-0 lg:w-0 lg:overflow-hidden',
-            )}
-          >
-            <h1 className="truncate font-display text-base font-bold text-white">
-              {APP_NAME}
-            </h1>
-            <p className="truncate text-[11px] uppercase tracking-wider text-white/50">
-              {APP_TAGLINE}
-            </p>
-          </div>
 
           <Button
             isIconOnly
             variant="light"
+            size="sm"
             onPress={() => setMobileOpen(false)}
-            className="ml-auto text-white/70 data-[hover=true]:bg-white/10 data-[hover=true]:text-white lg:hidden"
+            className="ml-auto h-8 w-8 min-w-8 text-white/50 data-[hover=true]:bg-white/10 data-[hover=true]:text-white lg:hidden"
             aria-label="Close menu"
           >
-            <X className="h-5 w-5" />
+            <X className="h-[17px] w-[17px]" />
           </Button>
         </div>
 
+        {/* Navigation */}
         <nav
-          className="sidebar-scroll mt-6 min-h-0 flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden px-3"
+          className="sidebar-scroll mt-8 min-h-0 flex-1 space-y-5 overflow-y-auto overflow-x-hidden px-2.5 pb-3"
           aria-label="Primary"
         >
-          {NAV_ITEMS.map((item) => {
-            const badge =
-              item.path === '/messages' && unreadCount > 0
-                ? unreadCount
-                : undefined
+          {navGroups.map((group) => (
+            <div key={group.id}>
+              <p
+                className={cn(
+                  "mb-3 px-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/30",
+                  sidebarCollapsed && "lg:sr-only",
+                )}
+              >
+                {group.label}
+              </p>
+              <ul className="space-y-1.5">
+                {group.items.map((item) => {
+                  const badge =
+                    item.path === "/messages" && unreadCount > 0
+                      ? unreadCount
+                      : undefined;
 
-            return (
-              <SidebarLink
-                key={item.path}
-                path={item.path}
-                label={item.label}
-                icon={item.icon}
-                badge={badge}
-                collapsed={sidebarCollapsed}
-                onNavigate={handleNavigate}
-              />
-            )
-          })}
+                  return (
+                    <li key={item.path}>
+                      <SidebarLink
+                        path={item.path}
+                        label={item.label}
+                        icon={item.icon}
+                        badge={badge}
+                        collapsed={sidebarCollapsed}
+                        onNavigate={handleNavigate}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
 
-        <div className="mt-3 px-3">
+        {/* Footer */}
+        <div className="shrink-0 border-t border-white/[0.06] p-2.5">
           <div
             className={cn(
-              'flex items-center gap-3 rounded-xl bg-white/[0.06] p-2.5 ring-1 ring-white/10 transition-all',
-              sidebarCollapsed && 'lg:justify-center lg:p-2',
+              "flex items-center gap-2.5 rounded-lg px-2 py-2",
+              sidebarCollapsed && "lg:justify-center lg:px-1",
             )}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground shadow-inner">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[12px] font-semibold text-white">
               {userInitials}
             </div>
 
             <div
               className={cn(
-                'min-w-0 flex-1 transition-[opacity,width] duration-200',
+                "min-w-0 flex-1",
                 sidebarCollapsed &&
-                  'lg:pointer-events-none lg:w-0 lg:overflow-hidden lg:opacity-0',
+                  "lg:pointer-events-none lg:w-0 lg:overflow-hidden lg:opacity-0",
               )}
             >
-              <p className="truncate text-sm font-medium text-white">
-                {user?.name ?? 'Admin User'}
+              <p className="truncate text-[14px] font-medium text-white">
+                {user?.name ?? "Admin User"}
               </p>
-              <p className="truncate text-[11px] text-white/50">
-                {user?.title ?? 'Administrator'}
+              <p className="truncate text-[12px] text-white/40">
+                {roleTitle}
               </p>
             </div>
 
@@ -206,39 +266,42 @@ export function Sidebar(): React.ReactElement {
               variant="light"
               size="sm"
               className={cn(
-                'text-white/60 data-[hover=true]:bg-white/10 data-[hover=true]:text-white',
-                sidebarCollapsed && 'lg:hidden',
+                "h-8 w-8 min-w-8 text-white/40 data-[hover=true]:bg-white/10 data-[hover=true]:text-white",
+                sidebarCollapsed && "lg:hidden",
               )}
               aria-label="Sign out"
               onPress={() => void handleSignOut()}
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-[15px] w-[15px]" />
             </Button>
           </div>
-        </div>
 
-        <Button
-          variant="light"
-          onPress={toggleCollapsed}
-          className="mx-3 mt-3 hidden h-8 min-h-8 items-center justify-center gap-2 rounded-lg bg-white/[0.04] text-xs font-medium text-white/60 ring-1 ring-white/10 data-[hover=true]:bg-white/10 data-[hover=true]:text-white lg:flex"
-          aria-label={
-            sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
-          }
-          aria-pressed={sidebarCollapsed}
-          startContent={
-            <ChevronLeft
-              className={cn(
-                'h-3.5 w-3.5 transition-transform duration-200',
-                sidebarCollapsed && 'rotate-180',
-              )}
-            />
-          }
-        >
-          {!sidebarCollapsed ? 'Collapse' : null}
-        </Button>
+          <Button
+            variant="light"
+            size="sm"
+            onPress={toggleCollapsed}
+            className={cn(
+              "mt-1 hidden h-8 w-full min-h-8 items-center justify-center gap-2 rounded-lg text-[13px] font-medium text-white/40 data-[hover=true]:bg-white/[0.06] data-[hover=true]:text-white/80 lg:flex",
+              sidebarCollapsed && "px-0",
+            )}
+            aria-label={
+              sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
+            aria-pressed={sidebarCollapsed}
+            startContent={
+              sidebarCollapsed ? (
+                <PanelLeftOpen className="h-[15px] w-[15px]" />
+              ) : (
+                <PanelLeftClose className="h-[15px] w-[15px]" />
+              )
+            }
+          >
+            {!sidebarCollapsed ? "Collapse" : null}
+          </Button>
+        </div>
       </aside>
     </>
-  )
+  );
 }
 
 function SidebarLink({
@@ -249,14 +312,14 @@ function SidebarLink({
   collapsed,
   onNavigate,
 }: {
-  path: string
-  label: string
-  icon: keyof typeof iconMap
-  badge?: number
-  collapsed: boolean
-  onNavigate?: () => void
+  path: string;
+  label: string;
+  icon: NavIconName;
+  badge?: number;
+  collapsed: boolean;
+  onNavigate?: () => void;
 }): React.ReactElement {
-  const Icon = iconMap[icon]
+  const Icon = iconMap[icon];
 
   return (
     <NavLink
@@ -265,53 +328,53 @@ function SidebarLink({
       title={collapsed ? label : undefined}
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium outline-none transition-all duration-200',
-          collapsed && 'lg:justify-center lg:gap-0 lg:px-2',
+          "group relative flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-[14px] font-medium outline-none transition-colors duration-150",
+          collapsed && "lg:justify-center lg:gap-0 lg:px-2",
           isActive
-            ? 'bg-white/[0.08] text-white'
-            : 'text-white/65 hover:bg-white/[0.05] hover:text-white',
+            ? "bg-white/[0.1] text-white"
+            : "text-white/55 hover:bg-white/[0.05] hover:text-white/90",
         )
       }
     >
       {({ isActive }) => (
         <>
+          {isActive ? (
+            <span
+              className="absolute left-0 top-1/2 h-[22px] w-[2px] -translate-y-1/2 rounded-r-full bg-accent"
+              aria-hidden
+            />
+          ) : null}
           <Icon
             className={cn(
-              'h-[19px] w-[19px] shrink-0 transition-colors',
+              "h-[17px] w-[17px] shrink-0 transition-colors",
               isActive
-                ? 'text-accent'
-                : 'text-white/65 group-hover:text-white',
+                ? "text-accent"
+                : "text-white/45 group-hover:text-white/80",
             )}
             aria-hidden
           />
           <span
             className={cn(
-              'flex-1 truncate transition-[opacity,width] duration-200',
+              "flex-1 truncate",
               collapsed &&
-                'lg:pointer-events-none lg:w-0 lg:overflow-hidden lg:opacity-0',
+                "lg:pointer-events-none lg:w-0 lg:overflow-hidden lg:opacity-0",
             )}
           >
             {label}
           </span>
           {badge != null && badge > 0 && !collapsed ? (
-            <span className="ml-auto rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent">
-              {badge > 99 ? '99+' : badge}
+            <span className="ml-auto animate-badge-blink rounded-md bg-accent px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-accent-foreground">
+              {badge > 99 ? "99+" : badge}
             </span>
           ) : null}
           {badge != null && badge > 0 && collapsed ? (
             <span
-              className="absolute right-2 top-2 hidden h-2 w-2 rounded-full bg-accent lg:block"
-              aria-label={`${badge} pending`}
-            />
-          ) : null}
-          {isActive ? (
-            <span
-              className="absolute right-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-l-full bg-accent"
-              aria-hidden
+              className="absolute right-1.5 top-1.5 hidden h-2 w-2 animate-badge-blink rounded-full bg-accent lg:block"
+              aria-label={`${badge} unread`}
             />
           ) : null}
         </>
       )}
     </NavLink>
-  )
+  );
 }

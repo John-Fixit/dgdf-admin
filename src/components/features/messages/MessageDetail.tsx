@@ -10,6 +10,7 @@ interface MessageDetailProps {
   message: Message | null
   onDelete: (id: string) => void
   isDeleting?: boolean
+  canDelete?: boolean
 }
 
 /**
@@ -19,6 +20,7 @@ export function MessageDetail({
   message,
   onDelete,
   isDeleting = false,
+  canDelete = true,
 }: MessageDetailProps): React.ReactElement {
   if (!message) {
     return (
@@ -42,17 +44,19 @@ export function MessageDetail({
           <h2 className="font-display text-xl font-semibold leading-snug tracking-tight text-primary sm:text-2xl">
             {message.subject}
           </h2>
-          <Button
-            isIconOnly
-            variant="light"
-            color="danger"
-            onPress={() => onDelete(message.id)}
-            isDisabled={isDeleting}
-            className="shrink-0"
-            aria-label={`Delete message from ${message.name}`}
-          >
-            <Trash2 className="h-5 w-5" />
-          </Button>
+          {canDelete ? (
+            <Button
+              isIconOnly
+              variant="light"
+              color="danger"
+              onPress={() => onDelete(message.id)}
+              isDisabled={isDeleting}
+              className="shrink-0"
+              aria-label={`Delete message from ${message.name}`}
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+          ) : null}
         </header>
 
         <div className="mb-5 space-y-1 text-sm text-slate-600">

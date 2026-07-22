@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import {
   createBrowserRouter,
   Navigate,
@@ -16,13 +16,35 @@ const Login = lazy(() => import('@/pages/Login'))
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const GalleryManager = lazy(() => import('@/pages/GalleryManager'))
 const ContentEditor = lazy(() => import('@/pages/ContentEditor'))
+const LeadershipManager = lazy(() => import('@/pages/LeadershipManager'))
+const SiteSettings = lazy(() => import('@/pages/SiteSettings'))
+const Settings = lazy(() => import('@/pages/Settings'))
 const Donations = lazy(() => import('@/pages/Donations'))
 const Messages = lazy(() => import('@/pages/Messages'))
+const AuditLog = lazy(() => import('@/pages/AuditLog'))
+const Administrators = lazy(() => import('@/pages/Administrators'))
 
 /**
- * Root shell — mounts global modals above all routes.
+ * Root shell — hydrates the httpOnly session, then mounts routes + modals.
  */
 function RootLayout(): React.ReactElement {
+  const isHydrated = useAuthStore((s) => s.isHydrated)
+  const hydrateSession = useAuthStore((s) => s.hydrateSession)
+
+  useEffect(() => {
+    void hydrateSession()
+  }, [hydrateSession])
+
+  if (!isHydrated) {
+    return (
+      <LoadingSpinner
+        label="Checking session…"
+        className="min-h-svh"
+        size="lg"
+      />
+    )
+  }
+
   return (
     <>
       <Outlet />
@@ -92,12 +114,32 @@ export const router = createBrowserRouter([
                 element: <ContentEditor />,
               },
               {
+                path: '/leadership',
+                element: <LeadershipManager />,
+              },
+              {
+                path: '/site-settings',
+                element: <SiteSettings />,
+              },
+              {
+                path: '/settings',
+                element: <Settings />,
+              },
+              {
+                path: '/administrators',
+                element: <Administrators />,
+              },
+              {
                 path: '/donations',
                 element: <Donations />,
               },
               {
                 path: '/messages',
                 element: <Messages />,
+              },
+              {
+                path: '/audit-log',
+                element: <AuditLog />,
               },
             ],
           },

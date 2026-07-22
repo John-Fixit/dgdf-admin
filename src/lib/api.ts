@@ -1,27 +1,32 @@
 import axios from 'axios'
-import { AUTH_STORAGE_KEY, MOCK_DELAY_MS } from '@/lib/constants'
 import type {
+  AdminRole,
   AdminUser,
-  DashboardStats,
+  Administrator,
+  AdministratorsResponse,
+  AuditLogFilters,
+  AuditLogResponse,
+  CreateAdministratorPayload,
+  DashboardData,
   Donation,
   GalleryItem,
+  GalleryUpdatePayload,
   GalleryUploadPayload,
+  LeadershipMember,
+  LeadershipMemberPayload,
   LoginCredentials,
   Message,
+  ResetAdministratorPasswordPayload,
   SiteContentDocument,
+  SiteSettings,
+  UpdateAdministratorRolePayload,
+  UpdateAdministratorStatusPayload,
   UpdateContentSectionPayload,
+  UpdateSiteSettingsSectionPayload,
 } from '@/lib/types'
-import { delay } from '@/lib/utils'
-import {
-  computeDashboardStats,
-  mockContent,
-  mockDonations,
-  mockGallery,
-  mockMessages,
-} from '@/mock-data'
 import { useSessionStore } from '@/store/sessionStore'
 
-/** Axios instance pointed at the API base URL */
+/** Axios instance pointed at the API base URL (auth via httpOnly cookie) */
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:5002',
   headers: {
@@ -30,37 +35,64 @@ export const apiClient = axios.create({
   withCredentials: true,
 })
 
-apiClient.interceptors.request.use((config) => {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as { state?: { user?: { token?: string } } }
-      const token = parsed.state?.user?.token
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-    }
-  } catch {
-    // ignore malformed auth storage
-  }
-  return config
-})
-
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       const url = error.config?.url ?? ''
-      const isAuthRequest =
-        url.includes('/auth/login') || url.includes('/auth/logout')
+      const isAuthProbe =
+        url.includes('/auth/login') ||
+        url.includes('/auth/logout') ||
+        url.includes('/auth/me')
 
-      if (!isAuthRequest && !window.location.pathname.startsWith('/login')) {
+      if (!isAuthProbe && !window.location.pathname.startsWith('/login')) {
         useSessionStore.getState().openExpired()
       }
     }
     return Promise.reject(error)
   },
 )
+
+type AuthUserPayload = {
+  id: string
+  email: string
+  role: AdminRole
+  name?: string
+  status?: 'active' | 'inactive'
+}
+
+/**
+ * Maps an API auth user payload to the admin UI shape.
+ */
+function mapAdminUser(user: AuthUserPayload): AdminUser {
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    name: user.name?.trim() || user.email.split('@')[0] || 'Admin',
+    ...(user.status ? { status: user.status } : {}),
+  }
+}
+
+type ApiEnvelope<T> = {
+  success: boolean
+  message?: string
+  data: T
+}
+
+/**
+ * Extracts a useful error message from an Axios failure.
+ */
+function apiErrorMessage(err: unknown, fallback: string): string {
+  if (axios.isAxiosError(err)) {
+    return (
+      (err.response?.data as { message?: string } | undefined)?.message ||
+      fallback
+    )
+  }
+  if (err instanceof Error) return err.message
+  return fallback
+}
 
 type ApiDonation = {
   _id: string
@@ -91,43 +123,24 @@ function mapDonation(donation: ApiDonation): Donation {
   }
 }
 
-/** In-memory mutable stores backing mock API responses */
-let galleryStore: GalleryItem[] = [...mockGallery]
-let donationsStore: Donation[] = [...mockDonations]
-let messagesStore: Message[] = [...mockMessages]
-let contentStore: SiteContentDocument = structuredClone(mockContent)
-
 /**
  * Authenticates an admin user against the API.
+ * Session JWT is set as an httpOnly cookie by the server.
  */
 export async function login(credentials: LoginCredentials): Promise<AdminUser> {
   try {
-    const response = await apiClient.post<{
-      success: boolean
-      data: { id: string; email: string; role: 'admin'; token: string }
-    }>('/auth/login', credentials)
-
-    const user = response.data.data
-    return {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      token: user.token,
-      name: user.email.split('@')[0] || 'Admin',
-    }
+    const response = await apiClient.post<ApiEnvelope<AuthUserPayload>>(
+      '/auth/login',
+      credentials,
+    )
+    return mapAdminUser(response.data.data)
   } catch (err) {
-    if (axios.isAxiosError(err)) {
-      throw new Error(
-        (err.response?.data as { message?: string } | undefined)?.message ||
-          'Login failed',
-      )
-    }
-    throw err
+    throw new Error(apiErrorMessage(err, 'Login failed'))
   }
 }
 
 /**
- * Ends the admin session on the API.
+ * Ends the admin session on the API (clears the httpOnly cookie).
  */
 export async function logout(): Promise<void> {
   try {
@@ -138,59 +151,175 @@ export async function logout(): Promise<void> {
 }
 
 /**
- * Fetches dashboard summary statistics.
+ * Validates the current httpOnly session cookie and returns the user.
+ * Returns null when there is no valid session.
  */
-export async function fetchDashboardStats(): Promise<DashboardStats> {
-  await delay(MOCK_DELAY_MS)
-  return computeDashboardStats(
-    galleryStore,
-    donationsStore,
-    messagesStore,
-    contentStore,
-  )
+export async function fetchCurrentUser(): Promise<AdminUser | null> {
+  try {
+    const response =
+      await apiClient.get<ApiEnvelope<AuthUserPayload>>('/auth/me')
+    return mapAdminUser(response.data.data)
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      return null
+    }
+    throw new Error(apiErrorMessage(err, 'Failed to validate session'))
+  }
 }
 
 /**
- * Fetches all gallery items.
+ * Changes the authenticated admin's password.
+ */
+export async function changePassword(payload: {
+  currentPassword: string
+  newPassword: string
+}): Promise<AdminUser> {
+  try {
+    const response = await apiClient.patch<ApiEnvelope<AuthUserPayload>>(
+      '/auth/change-password',
+      payload,
+    )
+    return mapAdminUser(response.data.data)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to update password'))
+  }
+}
+
+/**
+ * Updates the authenticated admin's profile display name.
+ */
+export async function updateProfile(payload: {
+  name: string
+}): Promise<AdminUser> {
+  try {
+    const response = await apiClient.patch<ApiEnvelope<AuthUserPayload>>(
+      '/auth/update-profile',
+      payload,
+    )
+    return mapAdminUser(response.data.data)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to update profile'))
+  }
+}
+
+/**
+ * Uploads an image for CMS fields (content / settings logos).
+ */
+export async function uploadMedia(
+  file: File,
+  folder = 'dgdf/cms',
+): Promise<{ imageUrl: string; publicId: string }> {
+  const form = new FormData()
+  form.append('image', file)
+  form.append('folder', folder)
+  try {
+    const response = await apiClient.post<
+      ApiEnvelope<{ imageUrl: string; publicId: string }>
+    >('/media/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Upload failed'))
+  }
+}
+
+/**
+ * Fetches the aggregated admin dashboard payload.
+ */
+export async function fetchDashboard(): Promise<DashboardData> {
+  try {
+    const response =
+      await apiClient.get<ApiEnvelope<DashboardData>>('/dashboard')
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load dashboard'))
+  }
+}
+
+/**
+ * Fetches all gallery items (admin: every status).
  */
 export async function fetchGallery(): Promise<GalleryItem[]> {
-  await delay(MOCK_DELAY_MS)
-  return [...galleryStore]
+  try {
+    const response = await apiClient.get<ApiEnvelope<GalleryItem[]>>(
+      '/gallery',
+      { params: { all: true } },
+    )
+    return response.data.data ?? []
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load gallery'))
+  }
 }
 
 /**
- * Uploads (creates) a new gallery item.
+ * Uploads (creates) a new gallery item via multipart form.
  */
 export async function uploadGalleryItem(
   payload: GalleryUploadPayload,
 ): Promise<GalleryItem> {
-  await delay(MOCK_DELAY_MS)
-  const format =
-    payload.imageUrl.split('.').pop()?.toUpperCase().slice(0, 4) ?? 'JPG'
-  const item: GalleryItem = {
-    id: `gal-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    title: payload.title,
-    description: payload.description,
-    category: payload.category,
-    imageUrl: payload.imageUrl,
-    fileSize: '—',
-    format: ['JPG', 'JPEG', 'PNG', 'WEBP', 'MP4', 'WEBM'].includes(format)
-      ? format === 'JPEG'
-        ? 'JPG'
-        : format
-      : 'JPG',
-    createdAt: new Date().toISOString(),
+  if (!payload.file) {
+    throw new Error('An image file is required')
   }
-  galleryStore = [item, ...galleryStore]
-  return item
+  const form = new FormData()
+  form.append('image', payload.file)
+  form.append('title', payload.title)
+  form.append('description', payload.description)
+  form.append('category', payload.category)
+  form.append('status', payload.status)
+  form.append('sortOrder', String(payload.sortOrder))
+  form.append('mediaType', payload.mediaType)
+  if (payload.location) form.append('location', payload.location)
+
+  try {
+    const response = await apiClient.post<ApiEnvelope<GalleryItem>>(
+      '/gallery',
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to upload gallery item'))
+  }
+}
+
+/**
+ * Updates an existing gallery item.
+ */
+export async function updateGalleryItem(
+  id: string,
+  payload: GalleryUpdatePayload,
+): Promise<GalleryItem> {
+  const form = new FormData()
+  form.append('title', payload.title)
+  form.append('description', payload.description)
+  form.append('category', payload.category)
+  form.append('status', payload.status)
+  form.append('sortOrder', String(payload.sortOrder))
+  if (payload.location) form.append('location', payload.location)
+  if (payload.file) form.append('image', payload.file)
+
+  try {
+    const response = await apiClient.patch<ApiEnvelope<GalleryItem>>(
+      `/gallery/${id}`,
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to update gallery item'))
+  }
 }
 
 /**
  * Deletes a gallery item by id.
  */
 export async function deleteGalleryItem(id: string): Promise<void> {
-  await delay(MOCK_DELAY_MS)
-  galleryStore = galleryStore.filter((item) => item.id !== id)
+  try {
+    await apiClient.delete(`/gallery/${id}`)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to delete gallery item'))
+  }
 }
 
 /**
@@ -198,19 +327,12 @@ export async function deleteGalleryItem(id: string): Promise<void> {
  */
 export async function fetchDonations(): Promise<Donation[]> {
   try {
-    const response = await apiClient.get<{
-      success: boolean
-      data: ApiDonation[]
-    }>('/donations')
+    const response = await apiClient.get<ApiEnvelope<ApiDonation[]>>(
+      '/donations',
+    )
     return (response.data.data ?? []).map(mapDonation)
   } catch (err) {
-    if (axios.isAxiosError(err)) {
-      throw new Error(
-        (err.response?.data as { message?: string } | undefined)?.message ||
-          'Failed to load donations',
-      )
-    }
-    throw err
+    throw new Error(apiErrorMessage(err, 'Failed to load donations'))
   }
 }
 
@@ -218,46 +340,50 @@ export async function fetchDonations(): Promise<Donation[]> {
  * Fetches all contact messages.
  */
 export async function fetchMessages(): Promise<Message[]> {
-  await delay(MOCK_DELAY_MS)
-  return [...messagesStore]
+  try {
+    const response = await apiClient.get<ApiEnvelope<Message[]>>('/messages')
+    return response.data.data ?? []
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load messages'))
+  }
 }
 
 /**
  * Marks a message as read.
  */
 export async function markMessageRead(id: string): Promise<Message> {
-  await delay(MOCK_DELAY_MS)
-  const index = messagesStore.findIndex((m) => m.id === id)
-  if (index === -1) {
-    throw new Error('Message not found')
+  try {
+    const response = await apiClient.patch<ApiEnvelope<Message>>(
+      `/messages/${id}/read`,
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to mark message as read'))
   }
-  const existing = messagesStore[index]
-  if (!existing) {
-    throw new Error('Message not found')
-  }
-  const updated: Message = { ...existing, read: true }
-  messagesStore = [
-    ...messagesStore.slice(0, index),
-    updated,
-    ...messagesStore.slice(index + 1),
-  ]
-  return updated
 }
 
 /**
  * Deletes a message by id.
  */
 export async function deleteMessage(id: string): Promise<void> {
-  await delay(MOCK_DELAY_MS)
-  messagesStore = messagesStore.filter((m) => m.id !== id)
+  try {
+    await apiClient.delete(`/messages/${id}`)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to delete message'))
+  }
 }
 
 /**
  * Fetches editable site content.
  */
 export async function fetchContent(): Promise<SiteContentDocument> {
-  await delay(MOCK_DELAY_MS)
-  return structuredClone(contentStore)
+  try {
+    const response =
+      await apiClient.get<ApiEnvelope<SiteContentDocument>>('/content')
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load content'))
+  }
 }
 
 /**
@@ -266,12 +392,15 @@ export async function fetchContent(): Promise<SiteContentDocument> {
 export async function updateContent(
   payload: SiteContentDocument,
 ): Promise<SiteContentDocument> {
-  await delay(MOCK_DELAY_MS)
-  contentStore = {
-    ...structuredClone(payload),
-    lastUpdatedAt: new Date().toISOString(),
+  try {
+    const response = await apiClient.put<ApiEnvelope<SiteContentDocument>>(
+      '/content',
+      payload,
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to save content'))
   }
-  return structuredClone(contentStore)
 }
 
 /**
@@ -280,12 +409,298 @@ export async function updateContent(
 export async function updateContentSection(
   payload: UpdateContentSectionPayload,
 ): Promise<SiteContentDocument> {
-  await delay(MOCK_DELAY_MS)
-  const { page, section, data } = payload
-  const next = structuredClone(contentStore)
-  const pageContent = next[page] as unknown as Record<string, Record<string, string | number>>
-  pageContent[section] = { ...data }
-  next.lastUpdatedAt = new Date().toISOString()
-  contentStore = next
-  return structuredClone(contentStore)
+  try {
+    const response = await apiClient.patch<ApiEnvelope<SiteContentDocument>>(
+      `/content/${payload.page}/${payload.section}`,
+      { data: payload.data },
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to save content section'))
+  }
+}
+
+/**
+ * Fetches leadership members (admin: every status).
+ */
+export async function fetchLeadership(): Promise<LeadershipMember[]> {
+  try {
+    const response = await apiClient.get<ApiEnvelope<LeadershipMember[]>>(
+      '/leadership',
+      { params: { all: true } },
+    )
+    return response.data.data ?? []
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load leadership'))
+  }
+}
+
+/**
+ * Creates a leadership member.
+ */
+export async function createLeadershipMember(
+  payload: LeadershipMemberPayload,
+): Promise<LeadershipMember> {
+  const form = new FormData()
+  form.append('name', payload.name)
+  form.append('role', payload.role)
+  form.append('bio', payload.bio)
+  form.append('sortOrder', String(payload.sortOrder))
+  form.append('status', payload.status)
+  form.append('isFounder', String(payload.isFounder))
+  if (payload.file) {
+    form.append('image', payload.file)
+  } else if (payload.photoUrl) {
+    form.append('photoUrl', payload.photoUrl)
+  }
+
+  try {
+    const response = await apiClient.post<ApiEnvelope<LeadershipMember>>(
+      '/leadership',
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to create leadership member'))
+  }
+}
+
+/**
+ * Updates a leadership member by id.
+ */
+export async function updateLeadershipMember(
+  id: string,
+  payload: LeadershipMemberPayload,
+): Promise<LeadershipMember> {
+  const form = new FormData()
+  form.append('name', payload.name)
+  form.append('role', payload.role)
+  form.append('bio', payload.bio)
+  form.append('sortOrder', String(payload.sortOrder))
+  form.append('status', payload.status)
+  form.append('isFounder', String(payload.isFounder))
+  if (payload.file) {
+    form.append('image', payload.file)
+  } else if (payload.photoUrl) {
+    form.append('photoUrl', payload.photoUrl)
+  }
+
+  try {
+    const response = await apiClient.patch<ApiEnvelope<LeadershipMember>>(
+      `/leadership/${id}`,
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to update leadership member'))
+  }
+}
+
+/**
+ * Deletes a leadership member by id.
+ */
+export async function deleteLeadershipMember(id: string): Promise<void> {
+  try {
+    await apiClient.delete(`/leadership/${id}`)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to delete leadership member'))
+  }
+}
+
+/**
+ * Fetches global site settings.
+ */
+export async function fetchSiteSettings(): Promise<SiteSettings> {
+  try {
+    const response =
+      await apiClient.get<ApiEnvelope<SiteSettings>>('/settings')
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load site settings'))
+  }
+}
+
+/**
+ * Updates a single site-settings section.
+ */
+export async function updateSiteSettingsSection(
+  payload: UpdateSiteSettingsSectionPayload,
+): Promise<SiteSettings> {
+  try {
+    const response = await apiClient.patch<ApiEnvelope<SiteSettings>>(
+      `/settings/${payload.section}`,
+      { data: payload.data },
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to save site settings'))
+  }
+}
+
+/**
+ * Fetches audit trail records with optional filters.
+ */
+export async function fetchAuditLogs(
+  filters: AuditLogFilters = {},
+): Promise<AuditLogResponse> {
+  const params: Record<string, string | number> = {}
+  if (filters.from) params.from = filters.from
+  if (filters.to) params.to = filters.to
+  if (filters.actorId) params.actorId = filters.actorId
+  if (filters.adminName) params.adminName = filters.adminName
+  if (filters.search) params.search = filters.search
+  if (filters.eventType) params.eventType = filters.eventType
+  if (filters.page) params.page = filters.page
+  if (filters.limit) params.limit = filters.limit
+
+  try {
+    const response = await apiClient.get<ApiEnvelope<AuditLogResponse>>(
+      '/audit-logs',
+      { params },
+    )
+    return (
+      response.data.data ?? {
+        items: [],
+        users: [],
+        eventTypes: [],
+        page: 1,
+        limit: 15,
+        total: 0,
+      }
+    )
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load audit logs'))
+  }
+}
+
+/**
+ * Clears all audit log entries (super admin only).
+ */
+export async function deleteAuditLogs(): Promise<{ deletedCount: number }> {
+  try {
+    const response = await apiClient.delete<
+      ApiEnvelope<{ deletedCount: number }>
+    >('/audit-logs')
+    return response.data.data ?? { deletedCount: 0 }
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to clear audit logs'))
+  }
+}
+
+/**
+ * Records a donation Excel export in the audit log.
+ */
+export async function recordDonationExport(): Promise<void> {
+  try {
+    await apiClient.post('/donations/export-log')
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to log donation export'))
+  }
+}
+
+/**
+ * Maps an administrator API payload.
+ */
+function mapAdministrator(admin: Administrator): Administrator {
+  return {
+    id: admin.id,
+    name: admin.name,
+    email: admin.email,
+    role: admin.role,
+    status: admin.status,
+    lastLogin: admin.lastLogin,
+    createdAt: admin.createdAt,
+    createdBy: admin.createdBy,
+  }
+}
+
+/**
+ * Fetches all administrators with stats.
+ */
+export async function fetchAdministrators(): Promise<AdministratorsResponse> {
+  try {
+    const response = await apiClient.get<ApiEnvelope<AdministratorsResponse>>(
+      '/administrators',
+    )
+    const data = response.data.data
+    return {
+      items: (data?.items ?? []).map(mapAdministrator),
+      stats: data?.stats ?? { total: 0, active: 0, viewers: 0 },
+    }
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load administrators'))
+  }
+}
+
+/**
+ * Creates a new administrator.
+ */
+export async function createAdministrator(
+  payload: CreateAdministratorPayload,
+): Promise<Administrator> {
+  try {
+    const response = await apiClient.post<ApiEnvelope<Administrator>>(
+      '/administrators',
+      payload,
+    )
+    return mapAdministrator(response.data.data)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to create administrator'))
+  }
+}
+
+/**
+ * Updates an administrator's role.
+ */
+export async function updateAdministratorRole(
+  id: string,
+  payload: UpdateAdministratorRolePayload,
+): Promise<Administrator> {
+  try {
+    const response = await apiClient.patch<ApiEnvelope<Administrator>>(
+      `/administrators/${id}/role`,
+      payload,
+    )
+    return mapAdministrator(response.data.data)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to update role'))
+  }
+}
+
+/**
+ * Updates an administrator's active/inactive status.
+ */
+export async function updateAdministratorStatus(
+  id: string,
+  payload: UpdateAdministratorStatusPayload,
+): Promise<Administrator> {
+  try {
+    const response = await apiClient.patch<ApiEnvelope<Administrator>>(
+      `/administrators/${id}/status`,
+      payload,
+    )
+    return mapAdministrator(response.data.data)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to update status'))
+  }
+}
+
+/**
+ * Resets an administrator's password.
+ */
+export async function resetAdministratorPassword(
+  id: string,
+  payload: ResetAdministratorPasswordPayload,
+): Promise<Administrator> {
+  try {
+    const response = await apiClient.patch<ApiEnvelope<Administrator>>(
+      `/administrators/${id}/reset-password`,
+      payload,
+    )
+    return mapAdministrator(response.data.data)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to reset password'))
+  }
 }

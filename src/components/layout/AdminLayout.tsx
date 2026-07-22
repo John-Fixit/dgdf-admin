@@ -21,33 +21,35 @@ export function AdminLayout(): React.ReactElement {
 
       <div
         className={cn(
-          'flex min-h-svh min-w-0 flex-col transition-[margin] duration-300 ease-out',
-          sidebarCollapsed ? 'lg:ml-[76px]' : 'lg:ml-[280px]',
+          'flex min-h-svh min-w-0 flex-col transition-[margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+          sidebarCollapsed ? 'lg:ml-[68px]' : 'lg:ml-[260px]',
         )}
       >
         <TopNav />
-        <main className="flex-1 p-5 sm:p-8 lg:p-10">
-          <Suspense
-            fallback={
-              <LoadingSpinner
-                label="Loading…"
-                className="min-h-[40vh]"
-                size="md"
-              />
-            }
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
-          </Suspense>
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-9">
+          <div className="mx-auto w-full max-w-[1280px]">
+            <Suspense
+              fallback={
+                <LoadingSpinner
+                  label="Loading…"
+                  className="min-h-[40vh]"
+                  size="md"
+                />
+              }
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <Outlet />
+                </motion.div>
+              </AnimatePresence>
+            </Suspense>
+          </div>
         </main>
       </div>
 

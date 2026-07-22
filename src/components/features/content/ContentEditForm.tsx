@@ -1,16 +1,25 @@
-import { useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import { addToast, Button } from '@heroui/react'
-import { Save } from 'lucide-react'
-import type { ContentBlockDef } from './contentBlocks'
-import { useUpdateContentSection } from '@/hooks'
-import { useDrawerStore } from '@/store/drawerStore'
-import { cn } from '@/lib/utils'
+import { useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { addToast, Button, cn, Input, Textarea } from "@heroui/react";
+import { Save } from "lucide-react";
+import type { ContentBlockDef } from "./contentBlocks";
+import { ImageUploadField } from "@/components/shared";
+import { useUpdateContentSection } from "@/hooks";
+import { uploadMedia } from "@/lib/api";
+import { useDrawerStore } from "@/store/drawerStore";
 
 interface ContentEditFormProps {
-  block: ContentBlockDef
-  initialValues: Record<string, string | number>
+  block: ContentBlockDef;
+  initialValues: Record<string, string | number>;
 }
+
+const fieldClassNames = {
+  label: "text-[11px] font-bold uppercase tracking-[0.14em] !text-accent",
+  inputWrapper:
+    "border-slate-200 bg-white shadow-none data-[hover=true]:border-primary/40 group-data-[focus=true]:border-primary",
+  input: "text-sm text-slate-800",
+  description: "text-xs text-slate-400",
+} as const;
 
 /**
  * Section edit form rendered inside the slide-over drawer.
@@ -19,161 +28,213 @@ export function ContentEditForm({
   block,
   initialValues,
 }: ContentEditFormProps): React.ReactElement {
-  const closeDrawer = useDrawerStore((s) => s.closeDrawer)
-  const saveMutation = useUpdateContentSection()
+  const closeDrawer = useDrawerStore((s) => s.closeDrawer);
+  const saveMutation = useUpdateContentSection();
+  const [pendingFiles, setPendingFiles] = useState<Record<string, File | null>>(
+    {},
+  );
 
   const defaultValues = useMemo(
     () =>
       Object.fromEntries(
         block.fields.map((field) => [
           field.key,
-          initialValues[field.key] ?? (field.type === 'number' ? 0 : ''),
+          initialValues[field.key] ?? (field.type === "number" ? 0 : ""),
         ]),
       ),
     [block.fields, initialValues],
-  )
+  );
 
-  const { register, handleSubmit, watch, reset, formState } = useForm<
+  const { control, handleSubmit, reset, formState } = useForm<
     Record<string, string | number>
   >({
     defaultValues,
-  })
+  });
+
+  console.log(block);
 
   useEffect(() => {
-    reset(defaultValues)
-  }, [defaultValues, reset])
+    reset(defaultValues);
+    setPendingFiles({});
+  }, [defaultValues, reset]);
 
-  const values = watch()
-  const isSaving = saveMutation.isPending
+  const isSaving = saveMutation.isPending;
 
   async function handleSave(
     data: Record<string, string | number>,
   ): Promise<void> {
-    const normalised: Record<string, string | number> = {}
+    const normalised: Record<string, string | number> = {};
     for (const field of block.fields) {
-      const raw = data[field.key]
-      if (field.type === 'number') {
-        normalised[field.key] = Number(raw) || 0
+      const raw = data[field.key];
+      if (field.type === "number") {
+        normalised[field.key] = Number(raw) || 0;
       } else {
-        normalised[field.key] = String(raw ?? '')
+        normalised[field.key] = String(raw ?? "");
       }
     }
 
     try {
+      for (const field of block.fields) {
+        if (field.type !== "image") continue;
+        const file = pendingFiles[field.key];
+        if (file) {
+          const uploaded = await uploadMedia(
+            file,
+            `dgdf/content/${block.page}`,
+          );
+          normalised[field.key] = uploaded.imageUrl;
+        }
+      }
+
+      const missingImage = block.fields.some(
+        (field) =>
+          field.type === "image" && !String(normalised[field.key] ?? "").trim(),
+      );
+      if (missingImage) {
+        addToast({
+          title: "Please upload required images",
+          description: "An image is required for this section.",
+          color: "danger",
+        });
+        return;
+      }
+
       await saveMutation.mutateAsync({
         page: block.page,
         section: block.id,
         data: normalised,
-      })
-      closeDrawer()
+      });
+      closeDrawer();
       addToast({
-        title: 'Changes saved',
-        description: 'Section updated successfully',
-        color: 'success',
-      })
+        title: "Changes saved",
+        description: "Section updated successfully",
+        color: "success",
+      });
     } catch {
       addToast({
-        title: 'Failed to save. Try again.',
-        color: 'danger',
-      })
+        title: "Failed to save. Try again.",
+        color: "danger",
+      });
     }
   }
 
   const submit = handleSubmit((data) => {
-    void handleSave(data)
-  })
+    void handleSave(data);
+  });
 
   return (
     <form
       className="flex h-full flex-col"
       onSubmit={(event) => {
-        event.preventDefault()
-        void submit()
+        event.preventDefault();
+        void submit();
       }}
     >
-      <div className="flex-1 space-y-6">
+      <div
+        className={cn(
+          "flex-1 space-y-6",
+          block.id === "impactStats" ? "grid grid-cols-2 gap-8" : "",
+        )}
+      >
         {block.fields.map((field) => {
-          const current = String(values[field.key] ?? '')
-          const count = current.length
+          if (field.type === "image") {
+            return (
+              <Controller
+                key={field.key}
+                name={field.key}
+                control={control}
+                render={({ field: formField }) => (
+                  <ImageUploadField
+                    label={field.label}
+                    helper={field.helper}
+                    value={String(formField.value ?? "")}
+                    onChange={(url, file) => {
+                      setPendingFiles((prev) => ({
+                        ...prev,
+                        [field.key]: file,
+                      }));
+                      formField.onChange(url);
+                    }}
+                  />
+                )}
+              />
+            );
+          }
 
-          return (
-            <div key={field.key} className="space-y-2">
-              <label
-                htmlFor={`content-field-${field.key}`}
-                className="block text-[11px] font-bold uppercase tracking-[0.14em] text-accent"
-              >
-                {field.label}
-              </label>
-
-              {field.type === 'textarea' ? (
-                <textarea
-                  id={`content-field-${field.key}`}
-                  rows={field.rows ?? 4}
-                  maxLength={field.maxLength}
-                  placeholder={field.placeholder}
-                  className={cn(
-                    'w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors',
-                    'placeholder:text-slate-400',
-                    'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
-                  )}
-                  {...register(field.key)}
-                />
-              ) : (
-                <div
-                  className={cn(
-                    'flex items-center gap-2',
-                    field.type === 'number' && 'max-w-[200px]',
-                  )}
-                >
-                  <input
-                    id={`content-field-${field.key}`}
-                    type={field.type === 'number' ? 'number' : 'text'}
+          if (field.type === "textarea") {
+            return (
+              <Controller
+                key={field.key}
+                name={field.key}
+                control={control}
+                render={({ field: formField }) => (
+                  <Textarea
+                    label={field.label}
+                    labelPlacement="outside"
+                    variant="bordered"
+                    minRows={field.rows ?? 4}
                     maxLength={field.maxLength}
                     placeholder={field.placeholder}
-                    className={cn(
-                      'h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-800 shadow-sm transition-colors',
-                      'placeholder:text-slate-400',
-                      'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
-                    )}
-                    {...register(field.key, {
-                      valueAsNumber: field.type === 'number',
-                    })}
+                    description={field.helper}
+                    value={String(formField.value ?? "")}
+                    onValueChange={formField.onChange}
+                    onBlur={formField.onBlur}
+                    classNames={{
+                      ...fieldClassNames,
+                      inputWrapper: `${fieldClassNames.inputWrapper} py-2`,
+                    }}
                   />
-                  {field.suffix ? (
-                    <span className="text-sm font-medium text-slate-400">
-                      {field.suffix}
-                    </span>
-                  ) : null}
-                </div>
-              )}
+                )}
+              />
+            );
+          }
 
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-xs leading-relaxed text-slate-400">
-                  {field.helper}
-                </p>
-                {field.maxLength && field.type !== 'number' ? (
-                  <span
-                    className={cn(
-                      'shrink-0 text-[11px] tabular-nums',
-                      count >= field.maxLength
-                        ? 'font-semibold text-error'
-                        : 'text-slate-300',
-                    )}
-                  >
-                    {count}/{field.maxLength}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          )
+          return (
+            <Controller
+              key={field.key}
+              name={field.key}
+              control={control}
+              render={({ field: formField }) => (
+                <Input
+                  type={field.type === "number" ? "number" : "text"}
+                  label={field.label}
+                  labelPlacement="outside"
+                  variant="bordered"
+                  maxLength={field.maxLength}
+                  placeholder={field.placeholder}
+                  description={field.helper}
+                  value={String(formField.value ?? "")}
+                  onValueChange={(value) => {
+                    if (field.type === "number") {
+                      formField.onChange(
+                        Number.isFinite(Number(value)) ? Number(value) : 0,
+                      );
+                      return;
+                    }
+                    formField.onChange(value);
+                  }}
+                  onBlur={formField.onBlur}
+                  endContent={
+                    field.suffix ? (
+                      <span className="text-sm font-medium text-slate-400">
+                        {field.suffix}
+                      </span>
+                    ) : undefined
+                  }
+                  className={field.type === "number" ? "max-w55" : undefined}
+                  classNames={fieldClassNames}
+                />
+              )}
+            />
+          );
         })}
       </div>
 
-      <div className="sticky bottom-0 mt-8 flex gap-3 border-t border-slate-100 bg-white pt-5">
+      <div className="sticky -bottom-6 mt-8 flex gap-3 border-t border-slate-100 bg-white pt-5 pb-5 z-10">
         <Button
           type="button"
           variant="bordered"
-          className="flex-1 rounded-xl border-slate-200 font-semibold"
+          className="flex-1 rounded-lg border-slate-200 font-semibold"
           isDisabled={isSaving}
           onPress={closeDrawer}
         >
@@ -182,7 +243,7 @@ export function ContentEditForm({
         <Button
           type="button"
           color="primary"
-          className="flex-1 rounded-xl font-semibold tracking-wide"
+          className="flex-1 rounded-lg font-semibold tracking-wide"
           isLoading={isSaving}
           isDisabled={!formState.isDirty}
           startContent={isSaving ? null : <Save className="h-4 w-4" />}
@@ -192,5 +253,5 @@ export function ContentEditForm({
         </Button>
       </div>
     </form>
-  )
+  );
 }
