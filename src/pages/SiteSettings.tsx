@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import {
   ContactSettingsCard,
-  OrganizationSettingsCard,
+  // OrganizationSettingsCard,
   SettingsErrorState,
   SettingsSkeleton,
   SocialSettingsCard,

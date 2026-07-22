@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { addToast, Button } from "@heroui/react";
 import { Save } from "lucide-react";
-import { ImageUploadField } from "@/components/shared";
 import { SettingsField, fieldClass } from "./SettingsField";
 import { useUpdateSiteSettingsSection } from "@/hooks";
 import { uploadMedia } from "@/lib/api";
@@ -28,7 +27,7 @@ export function OrganizationSettingsCard({
   const mutation = useUpdateSiteSettingsSection();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const { register, handleSubmit, watch, reset, setValue, formState } =
+  const { register, handleSubmit, watch, reset, formState } =
     useForm<FormValues>({
       defaultValues: values,
     });
@@ -40,7 +39,6 @@ export function OrganizationSettingsCard({
 
   const name = watch("name") ?? "";
   const tagline = watch("tagline") ?? "";
-  const logoUrl = watch("logoUrl") ?? "";
 
   const submit = handleSubmit(async (data) => {
     try {
