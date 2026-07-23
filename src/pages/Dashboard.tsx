@@ -137,7 +137,11 @@ export default function Dashboard(): React.ReactElement {
         aria-label="Impact and activity"
       >
         <div className="xl:col-span-3">
-          <ImpactChart monthly={chart.monthly} yearly={chart.yearly} />
+          <ImpactChart
+            weekly={chart.weekly ?? []}
+            monthly={chart.monthly}
+            yearly={chart.yearly}
+          />
         </div>
         <div className="xl:col-span-2">
           <ActivityFeed items={activity} />

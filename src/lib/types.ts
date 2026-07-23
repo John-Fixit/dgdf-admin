@@ -412,6 +412,7 @@ export interface DashboardData {
     unreadMessages: DashboardMetricCard
   }
   chart: {
+    weekly: ImpactChartPoint[]
     monthly: ImpactChartPoint[]
     yearly: ImpactChartPoint[]
   }

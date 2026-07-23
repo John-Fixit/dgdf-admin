@@ -6,11 +6,12 @@ import { cn, formatCurrency } from "@/lib/utils";
 import type { ImpactChartPoint } from "@/lib/types";
 
 interface ImpactChartProps {
+  weekly: ImpactChartPoint[];
   monthly: ImpactChartPoint[];
   yearly: ImpactChartPoint[];
 }
 
-type ChartRange = "monthly" | "yearly";
+type ChartRange = "weekly" | "monthly" | "yearly";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -27,14 +28,16 @@ function formatAxisValue(amount: number): string {
 }
 
 /**
- * Donation totals bar chart with monthly/yearly range toggle.
+ * Donation totals bar chart with weekly/monthly/yearly range toggle.
  */
 export function ImpactChart({
+  weekly,
   monthly,
   yearly,
 }: ImpactChartProps): React.ReactElement {
-  const [range, setRange] = useState<ChartRange>("monthly");
-  const data = range === "monthly" ? monthly : yearly;
+  const [range, setRange] = useState<ChartRange>("weekly");
+  const data =
+    range === "weekly" ? weekly : range === "monthly" ? monthly : yearly;
 
   const summary = useMemo(() => {
     const peak = data.reduce(
@@ -81,7 +84,7 @@ export function ImpactChart({
               </p>
             </div>
             <div className="flex gap-2" role="group" aria-label="Chart range">
-              {(["monthly", "yearly"] as const).map((option) => (
+              {(["weekly", "monthly", "yearly"] as const).map((option) => (
                 <Button
                   key={option}
                   size="sm"
@@ -210,7 +213,7 @@ export function ImpactChart({
                 </div>
               </div>
 
-              <div className="mt-3 flex justify-between gap-2 bordert border-slate-300 pt-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:text-[11px]">
+              <div className="mt-3 flex justify-between gap-2 border-t border-slate-300 pt-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:text-[11px]">
                 {data.map((point) => (
                   <span
                     key={`${range}-label-${point.label}`}
