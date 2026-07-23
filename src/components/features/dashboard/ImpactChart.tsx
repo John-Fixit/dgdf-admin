@@ -213,7 +213,7 @@ export function ImpactChart({
                 </div>
               </div>
 
-              <div className="mt-3 flex justify-between gap-2 border-t border-slate-300 pt-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:text-[11px]">
+              <div className="mt-3 flex justify-between gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:text-[11px]">
                 {data.map((point) => (
                   <span
                     key={`${range}-label-${point.label}`}
