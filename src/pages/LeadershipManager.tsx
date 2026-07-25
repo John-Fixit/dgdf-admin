@@ -20,7 +20,7 @@ import { can, PERMISSION_DENIED_MESSAGE } from '@/lib/permissions'
 import type { LeadershipMember } from '@/lib/types'
 
 /**
- * Leadership Manager — CRUD for board members shown on the public About page.
+ * Leadership Manager — CRUD for profiles on About and Meet Our Leaders.
  */
 export default function LeadershipManager(): React.ReactElement {
   const { data, isLoading, isError, error, refetch, isFetching } =
@@ -47,7 +47,7 @@ export default function LeadershipManager(): React.ReactElement {
     open({
       title: 'Add Leadership Member',
       description:
-        'Create a board or executive profile for the public About page.',
+        'Add a leader profile. Sort order 1–2 appear as President & Secretary on Meet Our Leaders.',
       size: 'lg',
       placement: 'right',
       content: <LeadershipForm nextSortOrder={nextSortOrder} />,
@@ -104,7 +104,7 @@ export default function LeadershipManager(): React.ReactElement {
     <div>
       <PageHeader
         title="Leadership"
-        description="Manage the people visitors meet on your About page — names, photos, roles, and bios."
+        description="Manage leader photos, roles, and bios for About and Meet Our Leaders. The first two published profiles (by sort order) appear with full content on Meet Our Leaders."
         actionsAlign="end"
         actions={
           <div className="flex flex-wrap items-center gap-3">

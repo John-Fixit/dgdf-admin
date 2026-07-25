@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import {
   APP_NAME,
-  APP_TAGLINE,
   NAV_GROUPS,
   type NavGroup,
   type NavIconName,
@@ -160,26 +159,31 @@ export function Sidebar(): React.ReactElement {
           <Link
             to="/dashboard"
             onClick={handleNavigate}
-            className="flex min-w-0 items-center gap-3"
+            className="flex min-w-0 items-center"
             aria-label={`${APP_NAME} home`}
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-[12px] font-bold tracking-wide text-accent-foreground">
-              DGD
-            </span>
-            <span
+            <img
+              src="/logo-white.png"
+              alt={APP_NAME}
+              width={1536}
+              height={1024}
               className={cn(
-                "min-w-0 transition-[opacity,transform,width] duration-200",
+                "h-11 w-auto object-contain transition-[opacity,transform,width] duration-200",
                 sidebarCollapsed &&
-                  "lg:pointer-events-none lg:w-0 lg:overflow-hidden lg:opacity-0",
+                  "lg:pointer-events-none lg:h-0 lg:w-0 lg:overflow-hidden lg:opacity-0",
               )}
-            >
-              <span className="block truncate text-[14px] font-semibold text-white">
-                {APP_NAME} Admin
-              </span>
-              <span className="block truncate text-[12px] text-white/40">
-                {APP_TAGLINE}
-              </span>
-            </span>
+            />
+            <img
+              src="/logo-icon-white.png"
+              alt=""
+              width={1024}
+              height={1024}
+              aria-hidden
+              className={cn(
+                "hidden h-9 w-9 object-contain",
+                sidebarCollapsed && "lg:block",
+              )}
+            />
           </Link>
 
           <Button

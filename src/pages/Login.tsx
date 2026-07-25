@@ -1,47 +1,46 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Button } from '@heroui/react'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Button } from "@heroui/react";
 import {
   ArrowRight,
-  Church,
   Eye,
   EyeOff,
   Loader2,
   Lock,
   Mail,
   ShieldCheck,
-} from 'lucide-react'
-import { Input, Label } from '@/components/ui'
-import { useAuth } from '@/hooks'
-import { fromParamToPath } from '@/lib/authRedirect'
-import { cn } from '@/lib/utils'
+} from "lucide-react";
+import { Input, Label } from "@/components/ui";
+import { useAuth } from "@/hooks";
+import { fromParamToPath } from "@/lib/authRedirect";
+import { cn } from "@/lib/utils";
 
 const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=1200&h=1600&fit=crop'
+  "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=1200&h=1600&fit=crop";
 
 const fadeUp = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
-} as const
+} as const;
 
 type LoginFormValues = {
-  email: string
-  password: string
-  rememberMe: boolean
-}
+  email: string;
+  password: string;
+  rememberMe: boolean;
+};
 
 /**
  * Public login page — split-pane layout matching the approved admin design.
  * Form state via react-hook-form; auth via backend /api/auth/login.
  */
 export default function Login(): React.ReactElement {
-  const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const [showPassword, setShowPassword] = useState(false)
-  const redirectTo = fromParamToPath(searchParams.get('from'))
+  const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
+  const redirectTo = fromParamToPath(searchParams.get("from"));
 
   const {
     register,
@@ -49,21 +48,21 @@ export default function Login(): React.ReactElement {
     formState: { errors },
   } = useForm<LoginFormValues>({
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
       rememberMe: false,
     },
-  })
+  });
 
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />
+    return <Navigate to={redirectTo} replace />;
   }
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
-    clearError()
-    const ok = await login({ email: email.trim(), password })
-    if (ok) navigate(redirectTo, { replace: true })
-  })
+    clearError();
+    const ok = await login({ email: email.trim(), password });
+    if (ok) navigate(redirectTo, { replace: true });
+  });
 
   return (
     <div className="flex h-svh overflow-hidden bg-surface">
@@ -96,19 +95,18 @@ export default function Login(): React.ReactElement {
             <motion.div
               {...fadeUp}
               transition={{ duration: 0.45 }}
-              className="mb-5 flex items-center gap-3"
+              className="mb-5"
             >
-              <div className="flex size-9 items-center justify-center rounded bg-primary">
-                <Church className="size-4 text-white" aria-hidden />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold uppercase tracking-tight text-primary">
-                  Divine Gospel Delight
-                </h1>
-                <p className="mt-0.5 text-[10px] font-bold uppercase leading-none tracking-[0.2em] text-accent">
-                  Management Console
-                </p>
-              </div>
+              <img
+                src="/logo.png"
+                alt="Divine Gospel Delight Foundation"
+                width={1536}
+                height={1024}
+                className="h-20 w-auto object-contain"
+              />
+              {/* <p className="mt-2 text-[10px] font-bold uppercase leading-none tracking-[0.2em] text-accent">
+                Management Console
+              </p> */}
             </motion.div>
 
             <motion.section
@@ -149,11 +147,11 @@ export default function Login(): React.ReactElement {
                       placeholder="e.g. name@dgdfoundation.org"
                       className="h-11 border-slate-300 pl-11 shadow-none"
                       aria-invalid={Boolean(errors.email)}
-                      {...register('email', {
-                        required: 'Email is required',
+                      {...register("email", {
+                        required: "Email is required",
                         pattern: {
                           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                          message: 'Enter a valid email',
+                          message: "Enter a valid email",
                         },
                       })}
                     />
@@ -186,16 +184,16 @@ export default function Login(): React.ReactElement {
                     />
                     <Input
                       id="password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       autoComplete="current-password"
                       placeholder="••••••••••••"
                       className="h-11 border-slate-300 px-11 shadow-none"
                       aria-invalid={Boolean(errors.password)}
-                      {...register('password', {
-                        required: 'Password is required',
+                      {...register("password", {
+                        required: "Password is required",
                         minLength: {
                           value: 6,
-                          message: 'Password must be at least 6 characters',
+                          message: "Password must be at least 6 characters",
                         },
                       })}
                     />
@@ -206,7 +204,7 @@ export default function Login(): React.ReactElement {
                       onPress={() => setShowPassword((prev) => !prev)}
                       className="absolute right-2 top-1/2 h-8 w-8 min-w-8 -translate-y-1/2 text-slate-400 data-[hover=true]:bg-transparent data-[hover=true]:text-primary"
                       aria-label={
-                        showPassword ? 'Hide password' : 'Show password'
+                        showPassword ? "Hide password" : "Show password"
                       }
                     >
                       {showPassword ? (
@@ -228,7 +226,7 @@ export default function Login(): React.ReactElement {
                     id="remember"
                     type="checkbox"
                     className="size-4 rounded border-slate-300 text-primary focus:ring-primary"
-                    {...register('rememberMe')}
+                    {...register("rememberMe")}
                   />
                   <Label
                     htmlFor="remember"
@@ -263,7 +261,7 @@ export default function Login(): React.ReactElement {
                     ) : undefined
                   }
                 >
-                  {isLoading ? 'Authenticating…' : 'Secure Login'}
+                  {isLoading ? "Authenticating…" : "Secure Login"}
                 </Button>
               </form>
             </motion.section>
@@ -294,13 +292,13 @@ export default function Login(): React.ReactElement {
           className="flex shrink-0 flex-col items-center justify-between gap-2 border-t border-slate-200/50 px-6 py-3 sm:px-8 md:flex-row"
         >
           <nav className="flex gap-5" aria-label="System links">
-            {(['System Status', 'Security Policy', 'Support'] as const).map(
+            {(["System Status", "Security Policy", "Support"] as const).map(
               (label) => (
                 <a
                   key={label}
                   href="#"
                   className={cn(
-                    'text-[11px] font-semibold text-slate-500 transition-colors hover:text-primary',
+                    "text-[11px] font-semibold text-slate-500 transition-colors hover:text-primary",
                   )}
                   onClick={(e) => e.preventDefault()}
                 >
@@ -315,5 +313,5 @@ export default function Login(): React.ReactElement {
         </motion.footer>
       </main>
     </div>
-  )
+  );
 }

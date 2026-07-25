@@ -138,7 +138,7 @@ export function LeadershipForm({
         <Field
           id="lead-name"
           label="Full Name"
-          helper="Display name on the About page leadership section"
+          helper="Shown on About and Meet Our Leaders pages"
           maxLength={80}
           count={watch('name')?.length ?? 0}
         >
@@ -146,7 +146,7 @@ export function LeadershipForm({
             id="lead-name"
             maxLength={80}
             className={fieldClass}
-            placeholder="Dr. Adebayo Ogunlesi"
+            placeholder="Rev'd Mrs Folake Ojo"
             {...register('name')}
           />
         </Field>
@@ -162,7 +162,7 @@ export function LeadershipForm({
             id="lead-role"
             maxLength={80}
             className={fieldClass}
-            placeholder="Founder & CEO"
+            placeholder="President / Chairperson"
             {...register('role')}
           />
         </Field>
@@ -170,16 +170,16 @@ export function LeadershipForm({
         <Field
           id="lead-bio"
           label="Biography"
-          helper="Short bio visitors read on the public About page"
-          maxLength={400}
+          helper="Full profile text on Meet Our Leaders (also used on About cards)"
+          maxLength={1200}
           count={bio.length}
         >
           <textarea
             id="lead-bio"
-            rows={5}
-            maxLength={400}
+            rows={8}
+            maxLength={1200}
             className={cn(fieldClass, 'h-auto resize-y py-3')}
-            placeholder="A short professional biography…"
+            placeholder="Write a warm, dignified biography for this leader…"
             {...register('bio')}
           />
         </Field>
@@ -225,10 +225,10 @@ export function LeadershipForm({
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
-                Founder Profile
+                Featured Leader
               </p>
               <p className="mt-1 text-xs text-slate-400">
-                Links this person to the public founder page
+                Marks the primary leader (usually President). Sort order 1–2 appear on Meet Our Leaders.
               </p>
             </div>
             <Switch
