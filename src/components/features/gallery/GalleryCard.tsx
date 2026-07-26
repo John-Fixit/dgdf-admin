@@ -1,6 +1,12 @@
 import { motion } from "framer-motion";
-import { Button } from "@heroui/react";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from "@heroui/react";
+import { Eye, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { GalleryItem } from "@/lib/types";
@@ -28,6 +34,7 @@ interface GalleryCardProps {
 
 /**
  * Premium gallery asset card with status badge and actions.
+ * Mobile: actions menu in the footer. Desktop: hover overlay on the media.
  */
 export function GalleryCard({
   item,
@@ -82,7 +89,8 @@ export function GalleryCard({
           ) : null}
         </div>
 
-        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-primary/35 opacity-0 transition-opacity group-hover:opacity-100">
+        {/* Large screens: hover overlay actions */}
+        <div className="absolute inset-0 hidden items-center justify-center gap-2 bg-primary/35 opacity-0 transition-opacity md:flex md:group-hover:opacity-100">
           <Button
             isIconOnly
             size="sm"
@@ -128,10 +136,73 @@ export function GalleryCard({
         <p className="mt-2 line-clamp-2 flex-1 text-sm leading-relaxed text-slate-500">
           {item.description || "No description"}
         </p>
-        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-          <span className="text-xs font-medium text-slate-400">
+        <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+          <span className="min-w-0 truncate text-xs font-medium text-slate-400">
             {fileMeta || "—"}
           </span>
+
+          {/* Small screens: actions dropdown */}
+          <div className="md:hidden">
+            <Dropdown placement="bottom-end">
+              <DropdownTrigger>
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  className="min-w-0 rounded-lg text-slate-500"
+                  aria-label={`Actions for ${item.title}`}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownTrigger>
+              {canManage ? (
+                <DropdownMenu
+                  aria-label={`Actions for ${item.title}`}
+                  disabledKeys={isDeleting ? ["delete"] : []}
+                  onAction={(key) => {
+                    if (key === "view") onView();
+                    if (key === "edit") onEdit();
+                    if (key === "delete") onDelete();
+                  }}
+                >
+                  <DropdownItem
+                    key="view"
+                    startContent={<Eye className="h-4 w-4" />}
+                  >
+                    View
+                  </DropdownItem>
+                  <DropdownItem
+                    key="edit"
+                    startContent={<Pencil className="h-4 w-4" />}
+                  >
+                    Edit
+                  </DropdownItem>
+                  <DropdownItem
+                    key="delete"
+                    className="text-error"
+                    color="danger"
+                    startContent={<Trash2 className="h-4 w-4" />}
+                  >
+                    Delete
+                  </DropdownItem>
+                </DropdownMenu>
+              ) : (
+                <DropdownMenu
+                  aria-label={`Actions for ${item.title}`}
+                  onAction={(key) => {
+                    if (key === "view") onView();
+                  }}
+                >
+                  <DropdownItem
+                    key="view"
+                    startContent={<Eye className="h-4 w-4" />}
+                  >
+                    View
+                  </DropdownItem>
+                </DropdownMenu>
+              )}
+            </Dropdown>
+          </div>
         </div>
       </div>
     </motion.article>
