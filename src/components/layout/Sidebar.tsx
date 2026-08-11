@@ -56,7 +56,10 @@ function filterNavGroups(
 
 const iconMap: Record<
   NavIconName,
-  React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>
+  React.ComponentType<{
+    className?: string;
+    "aria-hidden"?: boolean | "true" | "false";
+  }>
 > = {
   LayoutDashboard,
   Images,
@@ -103,7 +106,7 @@ export function Sidebar(): React.ReactElement {
   const navGroups = filterNavGroups(NAV_GROUPS, user?.role);
   const roleTitle = user?.role
     ? ROLE_TITLES[user.role]
-    : user?.title ?? "Administrator";
+    : (user?.title ?? "Administrator");
 
   function handleNavigate(): void {
     setMobileOpen(false);
@@ -165,10 +168,10 @@ export function Sidebar(): React.ReactElement {
             <img
               src="/logo-white.png"
               alt={APP_NAME}
-              width={1536}
-              height={1024}
+              width={2036}
+              height={1524}
               className={cn(
-                "h-11 w-auto object-contain transition-[opacity,transform,width] duration-200",
+                "h-14 w-auto object-contain transition-[opacity,transform,width] duration-200",
                 sidebarCollapsed &&
                   "lg:pointer-events-none lg:h-0 lg:w-0 lg:overflow-hidden lg:opacity-0",
               )}
@@ -176,11 +179,11 @@ export function Sidebar(): React.ReactElement {
             <img
               src="/logo-icon-white.png"
               alt=""
-              width={1024}
-              height={1024}
+              width={1524}
+              height={1524}
               aria-hidden
               className={cn(
-                "hidden h-9 w-9 object-contain",
+                "hidden h-12 w-12 object-contain",
                 sidebarCollapsed && "lg:block",
               )}
             />
@@ -260,9 +263,7 @@ export function Sidebar(): React.ReactElement {
               <p className="truncate text-[14px] font-medium text-white">
                 {user?.name ?? "Admin User"}
               </p>
-              <p className="truncate text-[12px] text-white/40">
-                {roleTitle}
-              </p>
+              <p className="truncate text-[12px] text-white/40">{roleTitle}</p>
             </div>
 
             <Button
