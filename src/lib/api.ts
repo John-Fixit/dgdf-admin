@@ -35,17 +35,20 @@ export const apiClient = axios.create({
   withCredentials: true,
 })
 
+/** Marks a request whose 401s should never open the session-expired modal. */
+const SILENT_PROBE_HEADER = 'X-Silent-Auth-Probe'
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       const url = error.config?.url ?? ''
-      const isAuthProbe =
+      const isSilentProbe =
         url.includes('/auth/login') ||
         url.includes('/auth/logout') ||
-        url.includes('/auth/me')
+        error.config?.headers?.[SILENT_PROBE_HEADER] === 'true'
 
-      if (!isAuthProbe && !window.location.pathname.startsWith('/login')) {
+      if (!isSilentProbe && !window.location.pathname.startsWith('/login')) {
         useSessionStore.getState().openExpired()
       }
     }
@@ -151,13 +154,30 @@ export async function logout(): Promise<void> {
 }
 
 /**
- * Validates the current httpOnly session cookie and returns the user.
- * Returns null when there is no valid session.
+ * Slides the session forward while the admin is actively using the portal.
+ * Re-issues the httpOnly token with a fresh idle-timeout expiry.
  */
-export async function fetchCurrentUser(): Promise<AdminUser | null> {
+export async function heartbeat(): Promise<void> {
+  await apiClient.post('/auth/heartbeat')
+}
+
+/**
+ * Validates the current httpOnly session cookie and returns the user.
+ * Returns null when there is no valid session. Read-only — never extends
+ * the session, so it's safe to call purely to check whether it's still alive.
+ * @param options.silent - Suppress the session-expired modal on 401 (only
+ *   for the very first app-load check, before we know if there was ever a session).
+ */
+export async function fetchCurrentUser(options?: {
+  silent?: boolean
+}): Promise<AdminUser | null> {
   try {
-    const response =
-      await apiClient.get<ApiEnvelope<AuthUserPayload>>('/auth/me')
+    const response = await apiClient.get<ApiEnvelope<AuthUserPayload>>(
+      '/auth/me',
+      options?.silent
+        ? { headers: { 'X-Silent-Auth-Probe': 'true' } }
+        : undefined,
+    )
     return mapAdminUser(response.data.data)
   } catch (err) {
     if (axios.isAxiosError(err) && err.response?.status === 401) {

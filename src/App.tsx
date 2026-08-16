@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout'
 import { LoadingSpinner, SessionExpiredModal } from '@/components/shared'
+import { useIdleSessionTimer } from '@/hooks/useIdleSessionTimer'
 import { loginPathWithFrom } from '@/lib/authRedirect'
 import { useAuthStore } from '@/store/authStore'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
@@ -29,11 +30,14 @@ const Administrators = lazy(() => import('@/pages/Administrators'))
  */
 function RootLayout(): React.ReactElement {
   const isHydrated = useAuthStore((s) => s.isHydrated)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const hydrateSession = useAuthStore((s) => s.hydrateSession)
 
   useEffect(() => {
     void hydrateSession()
   }, [hydrateSession])
+
+  useIdleSessionTimer(isHydrated && isAuthenticated)
 
   if (!isHydrated) {
     return (
