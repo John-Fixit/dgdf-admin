@@ -35,7 +35,7 @@ interface AuthState {
  */
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       isHydrated: false,
@@ -79,8 +79,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       hydrateSession: async () => {
+        // Only a browser that's never had a logged-in profile cached here
+        // is a "brand new visitor" — suppress the expired-session modal for
+        // that case only. If a profile was persisted from a prior login, a
+        // 401 here means the session genuinely died while away, and should
+        // show the modal like any other 401 would.
+        const isFirstEverVisit = get().user === null
         try {
-          const user = await fetchCurrentUser({ silent: true })
+          const user = await fetchCurrentUser({ silent: isFirstEverVisit })
           if (user) {
             set({
               user,
