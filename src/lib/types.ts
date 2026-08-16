@@ -63,9 +63,12 @@ export interface DashboardMetricCard {
 export interface FundChannel {
   id: string
   label: string
-  percent: number
+  /** Share of total donation value in this status, to 1 decimal place */
+  percentByAmount: number
+  /** Share of total donation count in this status, to 1 decimal place */
+  percentByCount: number
   amountLabel: string
-  tone: 'primary' | 'accent' | 'warm' | 'slate'
+  tone: 'success' | 'warning' | 'error'
 }
 
 /** Dashboard attention / alert item */
