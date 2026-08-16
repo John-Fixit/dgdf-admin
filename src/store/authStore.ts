@@ -80,7 +80,7 @@ export const useAuthStore = create<AuthState>()(
 
       hydrateSession: async () => {
         try {
-          const user = await fetchCurrentUser()
+          const user = await fetchCurrentUser({ silent: true })
           if (user) {
             set({
               user,

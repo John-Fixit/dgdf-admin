@@ -169,13 +169,13 @@ export default function Login(): React.ReactElement {
                     >
                       Secure Password
                     </Label>
-                    <Button
+                    {/* <Button
                       variant="light"
                       size="sm"
                       className="h-auto min-w-0 px-1 text-[11px] font-bold text-primary data-[hover=true]:bg-transparent data-[hover=true]:underline"
                     >
                       Forgot password?
-                    </Button>
+                    </Button> */}
                   </div>
                   <div className="relative">
                     <Lock
@@ -221,7 +221,7 @@ export default function Login(): React.ReactElement {
                   ) : null}
                 </div>
 
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <input
                     id="remember"
                     type="checkbox"
@@ -234,7 +234,7 @@ export default function Login(): React.ReactElement {
                   >
                     Keep me signed in for 30 days
                   </Label>
-                </div>
+                </div> */}
 
                 {error ? (
                   <p
