@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { ChevronRight, Menu, Search } from 'lucide-react'
+import { ChevronRight, Menu } from 'lucide-react'
 import { Button } from '@heroui/react'
-import { Input } from '@/components/ui'
 import { PAGE_TITLES } from '@/lib/constants'
 import { useUiStore } from '@/store/uiStore'
+import { GlobalSearch } from './GlobalSearch'
 import { NotificationBell } from './NotificationBell'
 
 /**
@@ -54,18 +54,7 @@ export function TopNav(): React.ReactElement {
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="relative hidden md:block">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
-            aria-hidden
-          />
-          <Input
-            type="search"
-            placeholder="Search…"
-            className="h-9 w-52 border-slate-200 bg-slate-50/80 pl-9 text-[13px] shadow-none transition-colors placeholder:text-slate-400 focus-visible:border-slate-300 focus-visible:bg-white focus-visible:ring-1 focus-visible:ring-primary/15 lg:w-64"
-            aria-label="Search"
-          />
-        </div>
+        <GlobalSearch />
 
         <NotificationBell />
       </div>
