@@ -11,6 +11,7 @@ import {
   Settings,
   SlidersHorizontal,
   Users,
+  type LucideIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui";
 import { NAV_ITEMS, type NavIconName } from "@/lib/constants";
@@ -18,10 +19,7 @@ import { can } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks";
 
-const iconMap: Record<
-  NavIconName,
-  React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
-> = {
+const iconMap: Record<NavIconName, LucideIcon> = {
   LayoutDashboard,
   Images,
   FileText,
