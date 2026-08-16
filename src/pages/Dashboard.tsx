@@ -106,7 +106,6 @@ export default function Dashboard(): React.ReactElement {
           value={metrics.livesImpacted.value}
           trend={metrics.livesImpacted.trend}
           trendPositive={metrics.livesImpacted.trendPositive}
-          subtitle={metrics.livesImpacted.subtitle}
           icon={UsersRound}
           iconTone="primary"
         />

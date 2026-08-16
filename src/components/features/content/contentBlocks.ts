@@ -498,28 +498,28 @@ export const CONTENT_BLOCKS: ContentBlockDef[] = [
       },
     ],
   },
-  {
-    id: "impactStats",
-    page: "donate",
-    label: "Stats",
-    title: "Impact Stats on Donate Page",
-    description: "Compact impact figures shown near the donation form",
-    icon: "stats",
-    fields: [
-      {
-        key: "peopleReached",
-        label: "People Reached",
-        type: "number",
-        helper: "People reached figure on the donate page",
-      },
-      {
-        key: "outreaches",
-        label: "Outreaches",
-        type: "number",
-        helper: "Outreach count shown on the donate page",
-      },
-    ],
-  },
+  // {
+  //   id: "impactStats",
+  //   page: "donate",
+  //   label: "Stats",
+  //   title: "Impact Stats on Donate Page",
+  //   description: "Compact impact figures shown near the donation form",
+  //   icon: "stats",
+  //   fields: [
+  //     {
+  //       key: "peopleReached",
+  //       label: "People Reached",
+  //       type: "number",
+  //       helper: "People reached figure on the donate page",
+  //     },
+  //     {
+  //       key: "outreaches",
+  //       label: "Outreaches",
+  //       type: "number",
+  //       helper: "Outreach count shown on the donate page",
+  //     },
+  //   ],
+  // },
 
   // ── Contact ───────────────────────────────────────────
   {

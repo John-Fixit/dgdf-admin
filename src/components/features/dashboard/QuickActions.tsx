@@ -8,38 +8,54 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+/** Soft icon-chip color per action, filling solid on hover. */
+const TONE_CLASSES = {
+  violet:
+    "bg-violet-100 text-violet-600 group-hover:bg-violet-600 group-hover:text-white",
+  sky: "bg-sky-100 text-sky-600 group-hover:bg-sky-600 group-hover:text-white",
+  amber:
+    "bg-amber-100 text-amber-700 group-hover:bg-amber-500 group-hover:text-white",
+  rose: "bg-rose-100 text-rose-600 group-hover:bg-rose-600 group-hover:text-white",
+} as const;
 
 const ACTIONS: {
   label: string;
   description: string;
   href: string;
   icon: LucideIcon;
+  tone: keyof typeof TONE_CLASSES;
 }[] = [
   {
     label: "Add gallery media",
     description: "Upload photos & videos",
     href: "/gallery",
     icon: Camera,
+    tone: "violet",
   },
   {
     label: "Review inbox",
     description: "Partnership & inquiries",
     href: "/messages",
     icon: Mail,
+    tone: "sky",
   },
   {
     label: "Update site content",
     description: "Editorial control center",
     href: "/content",
     icon: FileText,
+    tone: "amber",
   },
   {
     label: "Donation ledger",
     description: "Funds & transaction status",
     href: "/donations",
     icon: HandHeart,
+    tone: "rose",
   },
 ];
 
@@ -62,7 +78,7 @@ export function QuickActions(): React.ReactElement {
           <h2 className="mb-6 font-display text-xl font-semibold text-primary">
             Quick Actions
           </h2>
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-1">
             {ACTIONS.map((action, index) => {
               const Icon = action.icon;
               return (
@@ -77,7 +93,12 @@ export function QuickActions(): React.ReactElement {
                     to={action.href}
                     className="group flex h-full items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-all hover:border-primary/30 hover:bg-white hover:shadow-ambient"
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-400 group-hover:bg-primary group-hover:text-white">
+                    <span
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-400",
+                        TONE_CLASSES[action.tone],
+                      )}
+                    >
                       <Icon className="h-4 w-4" aria-hidden />
                     </span>
                     <span className="min-w-0">
