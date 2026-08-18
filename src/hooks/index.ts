@@ -13,6 +13,12 @@ export {
   useUpdateLeadership,
   useDeleteLeadership,
 } from './useLeadership'
+export {
+  useMilestones,
+  useCreateMilestone,
+  useUpdateMilestone,
+  useDeleteMilestone,
+} from './useMilestones'
 export { useSiteSettings, useUpdateSiteSettingsSection } from './useSiteSettings'
 export { useChangePassword, useUpdateProfile } from './useAccountSettings'
 export { useAuditLogs } from './useAuditLogs'
