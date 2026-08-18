@@ -145,6 +145,32 @@ export async function login(credentials: LoginCredentials): Promise<AdminUser> {
 }
 
 /**
+ * Requests a password-reset email. Always resolves — the API never reveals
+ * whether the given email is registered.
+ */
+export async function forgotPassword(email: string): Promise<void> {
+  try {
+    await apiClient.post('/auth/forgot-password', { email })
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to send reset email'))
+  }
+}
+
+/**
+ * Completes a password reset using the token from the reset-link email.
+ */
+export async function resetPassword(payload: {
+  token: string
+  newPassword: string
+}): Promise<void> {
+  try {
+    await apiClient.post('/auth/reset-password', payload)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to reset password'))
+  }
+}
+
+/**
  * Ends the admin session on the API (clears the httpOnly cookie).
  */
 export async function logout(): Promise<void> {

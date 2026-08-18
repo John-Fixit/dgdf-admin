@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@heroui/react";
 import {
@@ -169,13 +174,15 @@ export default function Login(): React.ReactElement {
                     >
                       Secure Password
                     </Label>
-                    {/* <Button
+                    <Button
+                      as={Link}
+                      to="/forgot-password"
                       variant="light"
                       size="sm"
                       className="h-auto min-w-0 px-1 text-[11px] font-bold text-primary data-[hover=true]:bg-transparent data-[hover=true]:underline"
                     >
                       Forgot password?
-                    </Button> */}
+                    </Button>
                   </div>
                   <div className="relative">
                     <Lock
