@@ -76,9 +76,9 @@ export function ImpactChart({
               <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
                 Performance
               </p>
-              <h2 className="font-display text-2xl font-semibold text-primary">
-                Donation Trends
-              </h2>
+                <h2 className="font-display text-2xl font-semibold text-primary">
+                  Donation Trends
+                </h2>
               <p className="mt-1 text-sm text-slate-500">
                 Successful gift totals across the selected reporting window.
               </p>

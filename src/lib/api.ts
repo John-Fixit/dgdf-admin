@@ -4,6 +4,8 @@ import type {
   AdminUser,
   Administrator,
   AdministratorsResponse,
+  AnalyticsDailyPoint,
+  AnalyticsSummary,
   AuditLogFilters,
   AuditLogResponse,
   CreateAdministratorPayload,
@@ -282,6 +284,33 @@ export async function fetchDashboard(): Promise<DashboardData> {
     return response.data.data
   } catch (err) {
     throw new Error(apiErrorMessage(err, 'Failed to load dashboard'))
+  }
+}
+
+/**
+ * Fetches GA4 visitor totals (active users, page views, sessions) for the
+ * last 30 days. Unlike most endpoints this route returns raw JSON, not the
+ * `{ success, data }` envelope.
+ */
+export async function fetchAnalyticsSummary(): Promise<AnalyticsSummary> {
+  try {
+    const response = await apiClient.get<AnalyticsSummary>('/analytics/summary')
+    return response.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load analytics summary'))
+  }
+}
+
+/**
+ * Fetches the day-by-day active-users trend for the last 30 days.
+ */
+export async function fetchAnalyticsDaily(): Promise<AnalyticsDailyPoint[]> {
+  try {
+    const response =
+      await apiClient.get<AnalyticsDailyPoint[]>('/analytics/daily')
+    return response.data ?? []
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load analytics trend'))
   }
 }
 
