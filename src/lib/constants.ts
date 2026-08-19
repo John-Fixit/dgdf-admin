@@ -13,6 +13,7 @@ export const QUERY_KEYS = {
   messages: ['messages'] as const,
   content: ['content'] as const,
   leadership: ['leadership'] as const,
+  milestones: ['milestones'] as const,
   settings: ['settings'] as const,
   dashboard: ['dashboard'] as const,
   auditLogs: ['audit-logs'] as const,

@@ -367,6 +367,25 @@ export interface LeadershipMemberPayload {
   file?: File
 }
 
+/** History timeline milestone shown on the public About page */
+export interface Milestone {
+  id: string
+  year: string
+  title: string
+  description: string
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+/** Payload for creating or updating a milestone */
+export interface MilestonePayload {
+  year: string
+  title: string
+  description: string
+  sortOrder?: number
+}
+
 /** Global site settings controlled from the admin portal */
 export interface SiteSettings {
   organization: {

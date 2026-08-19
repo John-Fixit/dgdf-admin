@@ -6,6 +6,7 @@ import {
   ContentErrorState,
   ContentSkeleton,
   ContentTabs,
+  TimelineManagerForm,
   getSectionValues,
   type ContentBlockDef,
 } from "@/components/features/content";
@@ -45,6 +46,21 @@ export default function ContentEditor(): React.ReactElement {
           initialValues={getSectionValues(data, block)}
         />
       ),
+    });
+  }
+
+  function handleEditTimeline(): void {
+    if (!canEdit) {
+      addToast({ title: PERMISSION_DENIED_MESSAGE, color: "danger" });
+      return;
+    }
+
+    open({
+      title: "History Timeline",
+      description: "Milestones shown in the About page journey section",
+      size: "2xl",
+      placement: "right",
+      content: <TimelineManagerForm />,
     });
   }
 
@@ -110,6 +126,7 @@ export default function ContentEditor(): React.ReactElement {
               content={data}
               canEdit={canEdit}
               onEdit={handleEdit}
+              onEditTimeline={handleEditTimeline}
             />
           </motion.div>
         </AnimatePresence>

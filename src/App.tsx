@@ -14,6 +14,8 @@ import { useAuthStore } from '@/store/authStore'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
 
 const Login = lazy(() => import('@/pages/Login'))
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'))
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const GalleryManager = lazy(() => import('@/pages/GalleryManager'))
 const ContentEditor = lazy(() => import('@/pages/ContentEditor'))
@@ -86,6 +88,36 @@ function LoginRoute(): React.ReactElement {
   )
 }
 
+/**
+ * Suspense wrapper for the public forgot-password chunk.
+ */
+function ForgotPasswordRoute(): React.ReactElement {
+  return (
+    <Suspense
+      fallback={
+        <LoadingSpinner label="Loading…" className="min-h-svh" size="lg" />
+      }
+    >
+      <ForgotPassword />
+    </Suspense>
+  )
+}
+
+/**
+ * Suspense wrapper for the public reset-password chunk.
+ */
+function ResetPasswordRoute(): React.ReactElement {
+  return (
+    <Suspense
+      fallback={
+        <LoadingSpinner label="Loading…" className="min-h-svh" size="lg" />
+      }
+    >
+      <ResetPassword />
+    </Suspense>
+  )
+}
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -94,6 +126,14 @@ export const router = createBrowserRouter([
       {
         path: '/login',
         element: <LoginRoute />,
+      },
+      {
+        path: '/forgot-password',
+        element: <ForgotPasswordRoute />,
+      },
+      {
+        path: '/reset-password',
+        element: <ResetPasswordRoute />,
       },
       {
         element: <ProtectedRoute />,

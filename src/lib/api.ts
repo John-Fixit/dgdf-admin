@@ -16,6 +16,8 @@ import type {
   LeadershipMemberPayload,
   LoginCredentials,
   Message,
+  Milestone,
+  MilestonePayload,
   ResetAdministratorPasswordPayload,
   SiteContentDocument,
   SiteSettings,
@@ -139,6 +141,32 @@ export async function login(credentials: LoginCredentials): Promise<AdminUser> {
     return mapAdminUser(response.data.data)
   } catch (err) {
     throw new Error(apiErrorMessage(err, 'Login failed'))
+  }
+}
+
+/**
+ * Requests a password-reset email. Always resolves — the API never reveals
+ * whether the given email is registered.
+ */
+export async function forgotPassword(email: string): Promise<void> {
+  try {
+    await apiClient.post('/auth/forgot-password', { email })
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to send reset email'))
+  }
+}
+
+/**
+ * Completes a password reset using the token from the reset-link email.
+ */
+export async function resetPassword(payload: {
+  token: string
+  newPassword: string
+}): Promise<void> {
+  try {
+    await apiClient.post('/auth/reset-password', payload)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to reset password'))
   }
 }
 
@@ -526,6 +554,64 @@ export async function deleteLeadershipMember(id: string): Promise<void> {
     await apiClient.delete(`/leadership/${id}`)
   } catch (err) {
     throw new Error(apiErrorMessage(err, 'Failed to delete leadership member'))
+  }
+}
+
+/**
+ * Fetches About page history timeline milestones.
+ */
+export async function fetchMilestones(): Promise<Milestone[]> {
+  try {
+    const response = await apiClient.get<ApiEnvelope<Milestone[]>>('/milestones')
+    return response.data.data ?? []
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to load timeline'))
+  }
+}
+
+/**
+ * Creates a timeline milestone.
+ */
+export async function createMilestone(
+  payload: MilestonePayload,
+): Promise<Milestone> {
+  try {
+    const response = await apiClient.post<ApiEnvelope<Milestone>>(
+      '/milestones',
+      payload,
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to create milestone'))
+  }
+}
+
+/**
+ * Updates a timeline milestone by id.
+ */
+export async function updateMilestone(
+  id: string,
+  payload: Partial<MilestonePayload>,
+): Promise<Milestone> {
+  try {
+    const response = await apiClient.patch<ApiEnvelope<Milestone>>(
+      `/milestones/${id}`,
+      payload,
+    )
+    return response.data.data
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to update milestone'))
+  }
+}
+
+/**
+ * Deletes a timeline milestone by id.
+ */
+export async function deleteMilestone(id: string): Promise<void> {
+  try {
+    await apiClient.delete(`/milestones/${id}`)
+  } catch (err) {
+    throw new Error(apiErrorMessage(err, 'Failed to delete milestone'))
   }
 }
 
