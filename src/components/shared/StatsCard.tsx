@@ -23,16 +23,6 @@ const iconToneClasses = {
   success: "bg-success/10 text-success ring-1 ring-success/20",
   error: "bg-error/10 text-error ring-1 ring-error/20",
 } as const;
-
-/** Top accent stripe — same tone as the icon badge, gives each card an at-a-glance color. */
-const toneBarClasses = {
-  accent: "bg-accent",
-  primary: "bg-primary",
-  warm: "bg-accent",
-  success: "bg-success",
-  error: "bg-error",
-} as const;
-
 /**
  * Dashboard metric card with staggered entrance.
  */
