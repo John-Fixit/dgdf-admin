@@ -1,11 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Button } from "@heroui/react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Mail } from "lucide-react";
+import { addToast, Button } from "@heroui/react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  RefreshCw,
+} from "lucide-react";
 import { Input, Label } from "@/components/ui";
 import { forgotPassword } from "@/lib/api";
+
+const RESEND_COOLDOWN_SECONDS = 30;
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=1200&h=1600&fit=crop";
@@ -28,6 +37,9 @@ export default function ForgotPassword(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const {
     register,
@@ -42,13 +54,44 @@ export default function ForgotPassword(): React.ReactElement {
     setIsLoading(true);
     try {
       await forgotPassword(email.trim());
+      setSubmittedEmail(email.trim());
       setSubmitted(true);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsLoading(false);
     }
   });
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  async function handleResend(): Promise<void> {
+    if (isResending || resendCooldown > 0) return;
+    setIsResending(true);
+    try {
+      await forgotPassword(submittedEmail);
+      addToast({
+        title: "Email resent",
+        description: `We've sent another link to ${submittedEmail}`,
+        color: "success",
+      });
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    } catch (err) {
+      addToast({
+        title: "Failed to resend",
+        description:
+          err instanceof Error ? err.message : "Something went wrong",
+        color: "danger",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  }
 
   return (
     <div className="flex h-svh overflow-hidden bg-surface">
@@ -69,7 +112,7 @@ export default function ForgotPassword(): React.ReactElement {
               action.
             </h2>
             <p className="text-xs font-medium uppercase tracking-widest text-white/80">
-              Lagos Community Outreach — 2024
+              Community Outreach — 2024
             </p>
           </motion.div>
         </div>
@@ -113,6 +156,31 @@ export default function ForgotPassword(): React.ReactElement {
                     If that email address is registered, we've sent a link to
                     reset your password. The link expires in 30 minutes.
                   </p>
+
+                  <p className="mt-4 text-xs text-slate-400">
+                    Didn't get it? Check your spam folder, or
+                  </p>
+                  <Button
+                    variant="bordered"
+                    size="sm"
+                    isDisabled={isResending || resendCooldown > 0}
+                    className="mt-2 h-9 rounded-lg border-primary/20 px-4 text-xs font-bold uppercase tracking-widest text-primary"
+                    startContent={
+                      isResending ? (
+                        <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                      ) : (
+                        <RefreshCw className="size-3.5" aria-hidden />
+                      )
+                    }
+                    onPress={() => void handleResend()}
+                  >
+                    {resendCooldown > 0
+                      ? `Resend in ${resendCooldown}s`
+                      : isResending
+                        ? "Resending…"
+                        : "Resend Email"}
+                  </Button>
+
                   <Link
                     to="/login"
                     className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary hover:underline"
