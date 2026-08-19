@@ -68,6 +68,14 @@ export function formatRelativeTime(iso: string): string {
 }
 
 /**
+ * Formats a plain count (e.g. visitor totals) with locale grouping.
+ */
+export function formatCount(value: number | string): string {
+  const n = typeof value === "string" ? Number(value) : value;
+  return Number.isFinite(n) ? n.toLocaleString("en-NG") : "0";
+}
+
+/**
  * Truncates a string to a maximum length with an ellipsis.
  */
 export function truncate(value: string, max = 80): string {

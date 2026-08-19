@@ -50,6 +50,19 @@ export interface ImpactChartPoint {
   isPeak?: boolean
 }
 
+/** GA4 totals for the last 30 days */
+export interface AnalyticsSummary {
+  activeUsers: string
+  pageViews: string
+  sessions: string
+}
+
+/** Single day of the GA4 active-users trend */
+export interface AnalyticsDailyPoint {
+  date: string
+  activeUsers: number
+}
+
 /** Single metric card on the dashboard */
 export interface DashboardMetricCard {
   label: string

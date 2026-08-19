@@ -16,6 +16,8 @@ export const QUERY_KEYS = {
   milestones: ['milestones'] as const,
   settings: ['settings'] as const,
   dashboard: ['dashboard'] as const,
+  analyticsSummary: ['analytics', 'summary'] as const,
+  analyticsDaily: ['analytics', 'daily'] as const,
   auditLogs: ['audit-logs'] as const,
   administrators: ['administrators'] as const,
 } as const

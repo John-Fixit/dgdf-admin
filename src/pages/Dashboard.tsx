@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
-import { HeartHandshake, Images, Mail, UsersRound } from "lucide-react";
+import { HeartHandshake, Images, LineChartIcon, UsersRound } from "lucide-react";
 import { Button } from "@heroui/react";
 import { LoadingSpinner, StatsCard } from "@/components/shared";
 import {
+  ACTIVE_USERS_TREND_ANCHOR_ID,
+  ActiveUsersChart,
   ActivityFeed,
+  AnalyticsStats,
   AttentionPanel,
   ChannelBreakdown,
   ImpactChart,
   QuickActions,
   RecentDonationsTable,
 } from "@/components/features/dashboard";
-import { useAuth, useDashboard } from "@/hooks";
+import { useAnalyticsSummary, useAuth, useDashboard } from "@/hooks";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -20,6 +23,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function Dashboard(): React.ReactElement {
   const { user } = useAuth();
   const { data, isLoading, isError, error, refetch } = useDashboard();
+  const { data: analyticsData } = useAnalyticsSummary();
 
   const firstName = user?.name?.split(" ")[0] ?? "Admin";
   const todayLabel = new Intl.DateTimeFormat("en-NG", {
@@ -96,7 +100,6 @@ export default function Dashboard(): React.ReactElement {
           value={metrics.donations.value}
           trend={metrics.donations.trend}
           trendPositive={metrics.donations.trendPositive}
-          subtitle={metrics.donations.subtitle}
           icon={HeartHandshake}
           iconTone="accent"
         />
@@ -121,12 +124,11 @@ export default function Dashboard(): React.ReactElement {
         />
         <StatsCard
           index={3}
-          title={metrics.unreadMessages.label}
-          value={metrics.unreadMessages.value}
-          trend={metrics.unreadMessages.trend}
-          trendPositive={metrics.unreadMessages.trendPositive}
-          subtitle={metrics.unreadMessages.subtitle}
-          icon={Mail}
+          title={"Website Analytics"}
+          value={analyticsData?.activeUsers as string}
+          trend={'Page Views'}
+          subtitle={analyticsData?.pageViews}
+          icon={LineChartIcon}
           iconTone="primary"
         />
       </section>
@@ -152,8 +154,15 @@ export default function Dashboard(): React.ReactElement {
         aria-label="Operations panels"
       >
         <QuickActions />
-        <ChannelBreakdown channels={donationStatus} />
+        <div className="space-y-2">
+          <ChannelBreakdown channels={donationStatus} />
+          <AnalyticsStats />
+        </div>
         <AttentionPanel alerts={alerts} />
+      </section>
+
+      <section id={ACTIVE_USERS_TREND_ANCHOR_ID} className="scroll-mt-6">
+        <ActiveUsersChart />
       </section>
 
       <RecentDonationsTable donations={recentDonations} />

@@ -31,5 +31,6 @@ export {
   useResetAdministratorPassword,
 } from './useAdministrators'
 export { useDashboard } from './useDashboard'
+export { useAnalyticsSummary, useAnalyticsDaily } from './useAnalytics'
 export { useDrawer } from './useDrawer'
 export { useConfirm } from './useConfirm'
